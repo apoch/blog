@@ -1,0 +1,13 @@
+// = The Bag of Holding
+// :published_at: 2017-05-28
+// :hp-tags: EpochLanguage,
+// :hp-alt-title: The Bag of Holding Opens
+
+= Welcome to the Bag of Holding
+
+This is a quick test of HubPress.io to see how I like it. Assuming all goes well, I will probably resume posting Bag of Holding entries here soon. Ancient archives from the Bag of Holding are on https://www.gamedev.net/blog/355-the-bag-of-holding/[GameDev.net] if you happen to like my writing. They are very, very old though.
+
+For now, here's a sneak preview of where https://github.com/apoch/epoch-language[Epoch] is headed:
+
+ simplelist<integer> types = new 0, nothing
+ 
