@@ -1,0 +1,25 @@
+= Epoch 64-bit self-hosting progress
+
+For a decent while now, I've been working on _self-hosting_ the https://github.com/apoch/epoch-language[Epoch] 64-bit compiler. This involves getting the compiler to a point where it is robust enough to actually compile itself. In order to do this, I'm using a modified 32-bit compiler which generates 64-bit binaries. Once a working 64-bit compiler is emitted, I can feed _that_ compiler back into itself, thus completing the head-trip ouroboros that is self-hosting or "bootstrapping" a compiler.
+
+At the moment, the compiler can successfully lex, parse, type-check, and partially code-gen itself. In practical terms, this means that the _front-end_ of the compiler is working fine, but the _back-end_ - the set of systems responsible for turning code into machine language and emitting a working executable - remains incomplete. For a slightly different perspective, I'm generating LLVM IR for _most_ of the compiler at this point.
+
+The bits that are left are corner cases in the code generation engine. There are things like intrinsic functions that need to be wired up, special semantics to implement, and so on. In particular, right now, I'm working on solving a corner case with the `nothing` concept. `nothing` is an Epoch idiom for expressing the idea that there is no data; except, unlike traditional `null`, `nothing` is its own _type_. If something has a type it cannot be `nothing` - again, unlike `null`. The usefulness of this may seem questionable, but the distinction makes it possible to avoid entire classes of runtime bugs, because you can never "forget" to write code that handles `nothing` - the compiler enforces this for you!
+
+Anyways, the trick with `nothing` is that you can pass a literal `nothing` to a function as an argument, to signify that you have no semantically valid data to pass in. This is handled correctly by the parser and type checker, but falls down in code generation because we can't actually omit the parameter from the function call.
+
+What happens is the code generator creates a function with, say, 3 parameters. If the second parameter is `nothing` at a call site, we have to still pass _something_ over to the function, from LLVM's perspective. So we generate a dummy parameter that essentially translates the `nothing` semantics into `null` semantics - something LLVM can recognize.
+
+Now things get complicated.
+
+If we have an algebraic sum type that includes the type `nothing`, and we pass a sum-typed variable into a function which expects _concrete_ types, the code goes through a process called _type dispatching_. This process basically matches an overload of a function with the _runtime_ types of the arguments passed in. Think of it like virtual dispatch with no objects involved. (Strictly speaking, type dispatch in Epoch is _multiple dispatch_ rather than the _single dispatch_ seen in more popular languages.)
+
+To facilitate all this, the compiler inserts _annotations_ into the code, so that it can deduce what set of overloads to choose from when the runtime dispatcher is invoked. Some of these annotations survive at runtime - analogs of _virtual-table pointers_ in C++.
+
+Annotations are passed as hidden parameters on the stack when invoking a function. And at last we reach the real wrinkle: a `nothing` annotation can come from _two distinct places_: either the construction of a sum-typed variable which allows `nothing` as a base type, or a literal `nothing` passed to a function call.
+
+The headache is that, to LLVM, _both uses look like a function call_. There is special case logic that exists to fix up the annotations for sum-typed constructors. Unfortunately, that logic collides with the logic needed to fix up annotations for general function call usage because LLVM doesn't know the difference.
+
+It's an imminently solvable problem, but it's a headache. Hopefully once this bug is gone there won't be _too_ many more to swat before I can start code-generating working 64-bit compilers.
+
+(Spoiler: I'm not optimistic.)
