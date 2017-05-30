@@ -1,0 +1,33 @@
+= Epoch Code-Generation Update
+
+A few minutes ago, the first 64-bit self-hosted compiler for Epoch finished the code-generation process... unsuccessfully.
+
+For context, this means that the 64-bit compiler (as built by the existing 32-bit compiler) was lexed, parsed, type-checked, and turned into LLVM IR. What _didn't_ happen is a successful code emission, i.e. the compiler is not yet producing a working executable image.
+
+What it _does_ produce is about 6.8 MB of errors, or just over 121,000 lines of output. This indicates that something in the code-gen process is off. We're generating LLVM IR but it can't be turned into machine code because it is malformed in some way.
+
+Inspection of the error output shows that one of the biggest offenses is bad linkage on a global variable. Epoch aspires to minimize the use of global state but it's a useful construct while bootstrapping a compiler. Fixing this mistake is trivial and reduces the error volume to much less.
+
+In fact, the vast bulk of the output is actually the text of the LLVM IR in pretty-printed form. This "dump" is generated to help diagnose code-gen bugs, but it's meant for much smaller programs than the entire compiler! Culling the dumped IR shows that there are in fact only *208* errors left (after the global linkage fiasco was addressed). And all of them are the same "sort" of error...
+
+== Terminator found in the middle of a basic block!
+
+LLVM divides code into sections called _basic blocks_. A single basic block represents a linear sequence of instructions, i.e. every instruction in it is executed exactly once. The way to accomplish branching flow control is to *end* a basic block with a branch instruction, likely a conditional branch of some kind. Branches target _other_ basic blocks to allow different code paths to execute based on the branch.
+
+The dreaded error "Terminator found in the middle of a basic block!" means that the constraints have been violated. Someone tried to issue a branch instruction in the middle of a block, which ruins the idea that every instruction in the block executes exactly once.
+
+In concrete terms, this error signals a bug in the code generation process. It means that somewhere along the line, the Epoch compiler lost track of a basic block being terminated, and continued shoving instructions into it after a branch.
+
+Thankfully, LLVM barfs a "label" when it emits this error, and that label is sufficient to locate the offending basic block:
+
+ 1>  ; <label>:41                                      ; preds = %11
+ 1>    br label %9, !dbg !3338
+ 1>    br label %42
+
+Sure enough, there are two branches being attempted here. The larger context is uninteresting (it's a nested if-statement inside a binary tree insertion routine) but the specific failure appears many times, meaning that it's probably a small number of actual code-generation bugs to solve.
+
+== Testing, 1 2 3
+
+As with any good software, robustness in a compiler happens only when enough bugs have been fixed _while simultaneously ensuring that no new ones are introduced_. The best tool I know of for doing this is _automated testing_. Now that a compiler bug has been identified, the objective is to replicate it in as tiny a program as possible.
+
+This "test case" provides two things: a way to reproduce the bug on-demand so a fix can be tested, and a way to detect if the bug ever reappears. The Epoch compiler test suite is still small, but invaluable for addressing this sort of problem. I will add this particular code to the test suite and hopefully have a fix in short order.
