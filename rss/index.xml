@@ -1,4 +1,60 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[The Bag of Holding]]></title><description><![CDATA[A bottomless satchel once possessed by a knight-errant.]]></description><link>https://apoch.github.io/blog</link><image><url>/ThorDogOfThunder.jpg</url><title>The Bag of Holding</title><link>https://apoch.github.io/blog</link></image><generator>RSS for Node</generator><lastBuildDate>Mon, 29 May 2017 22:05:09 GMT</lastBuildDate><atom:link href="https://apoch.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Epoch 64-bit self-hosting progress]]></title><description><![CDATA[<div class="paragraph">
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[The Bag of Holding]]></title><description><![CDATA[A bottomless satchel once possessed by a knight-errant.]]></description><link>https://apoch.github.io/blog</link><image><url>/ThorDogOfThunder.jpg</url><title>The Bag of Holding</title><link>https://apoch.github.io/blog</link></image><generator>RSS for Node</generator><lastBuildDate>Tue, 30 May 2017 04:21:40 GMT</lastBuildDate><atom:link href="https://apoch.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Epoch Code-Generation Update]]></title><description><![CDATA[<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>A few minutes ago, the first 64-bit self-hosted compiler for Epoch finished the code-generation process&#8230;&#8203; unsuccessfully.</p>
+</div>
+<div class="paragraph">
+<p>For context, this means that the 64-bit compiler (as built by the existing 32-bit compiler) was lexed, parsed, type-checked, and turned into LLVM IR. What <em>didn&#8217;t</em> happen is a successful code emission, i.e. the compiler is not yet producing a working executable image.</p>
+</div>
+<div class="paragraph">
+<p>What it <em>does</em> produce is about 6.8 MB of errors, or just over 121,000 lines of output. This indicates that something in the code-gen process is off. We&#8217;re generating LLVM IR but it can&#8217;t be turned into machine code because it is malformed in some way.</p>
+</div>
+<div class="paragraph">
+<p>Inspection of the error output shows that one of the biggest offenses is bad linkage on a global variable. Epoch aspires to minimize the use of global state but it&#8217;s a useful construct while bootstrapping a compiler. Fixing this mistake is trivial and reduces the error volume to much less.</p>
+</div>
+<div class="paragraph">
+<p>In fact, the vast bulk of the output is actually the text of the LLVM IR in pretty-printed form. This "dump" is generated to help diagnose code-gen bugs, but it&#8217;s meant for much smaller programs than the entire compiler! Culling the dumped IR shows that there are in fact only <strong>208</strong> errors left (after the global linkage fiasco was addressed). And all of them are the same "sort" of error&#8230;&#8203;</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_terminator_found_in_the_middle_of_a_basic_block">Terminator found in the middle of a basic block!</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>LLVM divides code into sections called <em>basic blocks</em>. A single basic block represents a linear sequence of instructions, i.e. every instruction in it is executed exactly once. The way to accomplish branching flow control is to <strong>end</strong> a basic block with a branch instruction, likely a conditional branch of some kind. Branches target <em>other</em> basic blocks to allow different code paths to execute based on the branch.</p>
+</div>
+<div class="paragraph">
+<p>The dreaded error "Terminator found in the middle of a basic block!" means that the constraints have been violated. Someone tried to issue a branch instruction in the middle of a block, which ruins the idea that every instruction in the block executes exactly once.</p>
+</div>
+<div class="paragraph">
+<p>In concrete terms, this error signals a bug in the code generation process. It means that somewhere along the line, the Epoch compiler lost track of a basic block being terminated, and continued shoving instructions into it after a branch.</p>
+</div>
+<div class="paragraph">
+<p>Thankfully, LLVM barfs a "label" when it emits this error, and that label is sufficient to locate the offending basic block:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>1&gt;  ; &lt;label&gt;:41                                      ; preds = %11
+1&gt;    br label %9, !dbg !3338
+1&gt;    br label %42</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Sure enough, there are two branches being attempted here. The larger context is uninteresting (it&#8217;s a nested if-statement inside a binary tree insertion routine) but the specific failure appears many times, meaning that it&#8217;s probably a small number of actual code-generation bugs to solve.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_testing_1_2_3">Testing, 1 2 3</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As with any good software, robustness in a compiler happens only when enough bugs have been fixed <em>while simultaneously ensuring that no new ones are introduced</em>. The best tool I know of for doing this is <em>automated testing</em>. Now that a compiler bug has been identified, the objective is to replicate it in as tiny a program as possible.</p>
+</div>
+<div class="paragraph">
+<p>This "test case" provides two things: a way to reproduce the bug on-demand so a fix can be tested, and a way to detect if the bug ever reappears. The Epoch compiler test suite is still small, but invaluable for addressing this sort of problem. I will add this particular code to the test suite and hopefully have a fix in short order.</p>
+</div>
+</div>
+</div>]]></description><link>https://apoch.github.io/blog/2017/05/29/Epoch-Code-Generation-Update.html</link><guid isPermaLink="true">https://apoch.github.io/blog/2017/05/29/Epoch-Code-Generation-Update.html</guid><dc:creator><![CDATA[Mike Lewis]]></dc:creator><pubDate>Mon, 29 May 2017 00:00:00 GMT</pubDate></item><item><title><![CDATA[Epoch 64-bit self-hosting progress]]></title><description><![CDATA[<div class="paragraph">
 <p>For a decent while now, I&#8217;ve been working on <em>self-hosting</em> the <a href="https://github.com/apoch/epoch-language">Epoch</a> 64-bit compiler. This involves getting the compiler to a point where it is robust enough to actually compile itself. In order to do this, I&#8217;m using a modified 32-bit compiler which generates 64-bit binaries. Once a working 64-bit compiler is emitted, I can feed <em>that</em> compiler back into itself, thus completing the head-trip ouroboros that is self-hosting or "bootstrapping" a compiler.</p>
 </div>
 <div class="paragraph">

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Epoch Code-Generation Update</title>
+    <meta name="description" content="" />
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="shortcut icon" href="https://apoch.github.io/blog/favicon.ico">
+
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/casper/assets/css/screen.css?v=1496118100556" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+
+    <link rel="canonical" href="https://apoch.github.io/blog/2017/05/29/Epoch-Code-Generation-Update.html" />
+    <meta name="referrer" content="origin" />
+    
+    <meta property="og:site_name" content="The Bag of Holding" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Epoch Code-Generation Update" />
+    <meta property="og:description" content="A few minutes ago, the first 64-bit self-hosted compiler for Epoch finished the code-generation process&amp;#8230;&amp;#8203; unsuccessfully. For context, this means that the 64-bit compiler (as built by the existing 32-bit compiler) was lexed, parsed, type-checked, and turned into LLVM IR. What didn&amp;#8217;t happen is a successful" />
+    <meta property="og:url" content="https://apoch.github.io/blog/2017/05/29/Epoch-Code-Generation-Update.html" />
+    <meta property="article:published_time" content="2017-05-29T00:00:00.000Z" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Epoch Code-Generation Update" />
+    <meta name="twitter:description" content="A few minutes ago, the first 64-bit self-hosted compiler for Epoch finished the code-generation process&amp;#8230;&amp;#8203; unsuccessfully. For context, this means that the 64-bit compiler (as built by the existing 32-bit compiler) was lexed, parsed, type-checked, and turned into LLVM IR. What didn&amp;#8217;t happen is a successful" />
+    <meta name="twitter:url" content="https://apoch.github.io/blog/2017/05/29/Epoch-Code-Generation-Update.html" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": "The Bag of Holding",
+    "author": {
+        "@type": "Person",
+        "name": "Mike Lewis",
+        "image": "https://avatars2.githubusercontent.com/u/321649?v=3",
+        "url": "https://apoch.github.io/blog/author/apoch/",
+        "sameAs": "https://apoch.github.io/",
+        "description": "Guild Wars 2 Project Technical Director @arenanet and author of the Epoch programming language."
+    },
+    "headline": "Epoch Code-Generation Update",
+    "url": "https://apoch.github.io/blog/2017/05/29/Epoch-Code-Generation-Update.html",
+    "datePublished": "2017-05-29T00:00:00.000Z",
+    "description": "A few minutes ago, the first 64-bit self-hosted compiler for Epoch finished the code-generation process&amp;#8230;&amp;#8203; unsuccessfully. For context, this means that the 64-bit compiler (as built by the existing 32-bit compiler) was lexed, parsed, type-checked, and turned into LLVM IR. What didn&amp;#8217;t happen is a successful"
+}
+    </script>
+
+    <meta name="generator" content="HubPress" />
+    <link rel="alternate" type="application/rss+xml" title="The Bag of Holding" href="https://apoch.github.io/blog/rss/" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/atom-one-dark.min.css">
+</head>
+<body class="post-template nav-closed">
+
+    
+
+    <div class="site-wrapper">
+
+        
+
+
+<header class="main-header post-head no-cover">
+    <nav class="main-nav  clearfix">
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+    <article class="post">
+
+        <header class="post-header">
+            <h1 class="post-title">Epoch Code-Generation Update</h1>
+            <section class="post-meta">
+                <time class="post-date" datetime="2017-05-29">29 May 2017</time> 
+            </section>
+        </header>
+
+        <section class="post-content">
+            <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>A few minutes ago, the first 64-bit self-hosted compiler for Epoch finished the code-generation process&#8230;&#8203; unsuccessfully.</p>
+</div>
+<div class="paragraph">
+<p>For context, this means that the 64-bit compiler (as built by the existing 32-bit compiler) was lexed, parsed, type-checked, and turned into LLVM IR. What <em>didn&#8217;t</em> happen is a successful code emission, i.e. the compiler is not yet producing a working executable image.</p>
+</div>
+<div class="paragraph">
+<p>What it <em>does</em> produce is about 6.8 MB of errors, or just over 121,000 lines of output. This indicates that something in the code-gen process is off. We&#8217;re generating LLVM IR but it can&#8217;t be turned into machine code because it is malformed in some way.</p>
+</div>
+<div class="paragraph">
+<p>Inspection of the error output shows that one of the biggest offenses is bad linkage on a global variable. Epoch aspires to minimize the use of global state but it&#8217;s a useful construct while bootstrapping a compiler. Fixing this mistake is trivial and reduces the error volume to much less.</p>
+</div>
+<div class="paragraph">
+<p>In fact, the vast bulk of the output is actually the text of the LLVM IR in pretty-printed form. This "dump" is generated to help diagnose code-gen bugs, but it&#8217;s meant for much smaller programs than the entire compiler! Culling the dumped IR shows that there are in fact only <strong>208</strong> errors left (after the global linkage fiasco was addressed). And all of them are the same "sort" of error&#8230;&#8203;</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_terminator_found_in_the_middle_of_a_basic_block">Terminator found in the middle of a basic block!</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>LLVM divides code into sections called <em>basic blocks</em>. A single basic block represents a linear sequence of instructions, i.e. every instruction in it is executed exactly once. The way to accomplish branching flow control is to <strong>end</strong> a basic block with a branch instruction, likely a conditional branch of some kind. Branches target <em>other</em> basic blocks to allow different code paths to execute based on the branch.</p>
+</div>
+<div class="paragraph">
+<p>The dreaded error "Terminator found in the middle of a basic block!" means that the constraints have been violated. Someone tried to issue a branch instruction in the middle of a block, which ruins the idea that every instruction in the block executes exactly once.</p>
+</div>
+<div class="paragraph">
+<p>In concrete terms, this error signals a bug in the code generation process. It means that somewhere along the line, the Epoch compiler lost track of a basic block being terminated, and continued shoving instructions into it after a branch.</p>
+</div>
+<div class="paragraph">
+<p>Thankfully, LLVM barfs a "label" when it emits this error, and that label is sufficient to locate the offending basic block:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>1&gt;  ; &lt;label&gt;:41                                      ; preds = %11
+1&gt;    br label %9, !dbg !3338
+1&gt;    br label %42</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Sure enough, there are two branches being attempted here. The larger context is uninteresting (it&#8217;s a nested if-statement inside a binary tree insertion routine) but the specific failure appears many times, meaning that it&#8217;s probably a small number of actual code-generation bugs to solve.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_testing_1_2_3">Testing, 1 2 3</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As with any good software, robustness in a compiler happens only when enough bugs have been fixed <em>while simultaneously ensuring that no new ones are introduced</em>. The best tool I know of for doing this is <em>automated testing</em>. Now that a compiler bug has been identified, the objective is to replicate it in as tiny a program as possible.</p>
+</div>
+<div class="paragraph">
+<p>This "test case" provides two things: a way to reproduce the bug on-demand so a fix can be tested, and a way to detect if the bug ever reappears. The Epoch compiler test suite is still small, but invaluable for addressing this sort of problem. I will add this particular code to the test suite and hopefully have a fix in short order.</p>
+</div>
+</div>
+</div>
+        </section>
+
+        <footer class="post-footer">
+
+
+            <figure class="author-image">
+                <a class="img" href="https://apoch.github.io/blog/author/apoch/" style="background-image: url(https://avatars2.githubusercontent.com/u/321649?v&#x3D;3)"><span class="hidden">Mike Lewis's Picture</span></a>
+            </figure>
+
+            <section class="author">
+                <h4><a href="https://apoch.github.io/blog/author/apoch/">Mike Lewis</a></h4>
+
+                    <p>Guild Wars 2 Project Technical Director @arenanet and author of the Epoch programming language.</p>
+                <div class="author-meta">
+                    <span class="author-location icon-location">Bellevue, WA</span>
+                    <span class="author-link icon-link"><a href="https://apoch.github.io/">https://apoch.github.io/</a></span>
+                </div>
+            </section>
+
+
+            <section class="share">
+                <h4>Share this post</h4>
+                <a class="icon-twitter" href="https://twitter.com/intent/tweet?text=Epoch%20Code-Generation%20Update&amp;url=https://apoch.github.io/blog/2017/05/29/Epoch-Code-Generation-Update.html"
+                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <span class="hidden">Twitter</span>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=https://apoch.github.io/blog/2017/05/29/Epoch-Code-Generation-Update.html"
+                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <span class="hidden">Facebook</span>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=https://apoch.github.io/blog/2017/05/29/Epoch-Code-Generation-Update.html"
+                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <span class="hidden">Google+</span>
+                </a>
+            </section>
+
+        </footer>
+
+
+    </article>
+
+</main>
+
+<aside class="read-next">
+</aside>
+
+
+
+        <footer class="site-footer clearfix">
+            <section class="copyright"><a href="https://apoch.github.io/blog">The Bag of Holding</a> &copy; 2017</section>
+            <section class="poweredby">Proudly published with <a href="http://hubpress.io">HubPress</a></section>
+        </footer>
+
+    </div>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js?v="></script> <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.min.js?v="></script> <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js?v="></script> 
+      <script type="text/javascript">
+        jQuery( document ).ready(function() {
+          // change date with ago
+          jQuery('ago.ago').each(function(){
+            var element = jQuery(this).parent();
+            element.html( moment(element.text()).fromNow());
+          });
+        });
+
+        hljs.initHighlightingOnLoad();
+      </script>
+       
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/casper/assets/js/jquery.fitvids.js?v=1496118100556"></script>
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/casper/assets/js/index.js?v=1496118100556"></script>
+
+</body>
+</html>
