@@ -1,4 +1,71 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[The Bag of Holding]]></title><description><![CDATA[A bottomless satchel once possessed by a knight-errant.]]></description><link>https://apoch.github.io/blog</link><image><url>/ThorDogOfThunder.jpg</url><title>The Bag of Holding</title><link>https://apoch.github.io/blog</link></image><generator>RSS for Node</generator><lastBuildDate>Tue, 30 May 2017 04:21:40 GMT</lastBuildDate><atom:link href="https://apoch.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Epoch Code-Generation Update]]></title><description><![CDATA[<div id="preamble">
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[The Bag of Holding]]></title><description><![CDATA[A bottomless satchel once possessed by a knight-errant.]]></description><link>https://apoch.github.io/blog</link><image><url>/ThorDogOfThunder.jpg</url><title>The Bag of Holding</title><link>https://apoch.github.io/blog</link></image><generator>RSS for Node</generator><lastBuildDate>Wed, 31 May 2017 05:17:38 GMT</lastBuildDate><atom:link href="https://apoch.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Epoch 64-bit compiler progress]]></title><description><![CDATA[<div class="paragraph">
+<p>Just a short while ago, the first working 64-bit compiler for <a href="https://github.com/apoch/epoch-language">Epoch</a> was produced!</p>
+</div>
+<div class="paragraph">
+<p>Well, "working" might be a minor stretch; it launches, prints a simple text banner message, and then exits cleanly. But that represents a lot of operational code by itself.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The 32-bit compiler is able to lex, parse, type-check, and code-gen the entirety of the 64-bit compiler&#8217;s source code.</p>
+</li>
+<li>
+<p>The 32-bit linker can emit 64-bit binaries, assisted by LLVM&#8217;s machine code generation facilities.</p>
+</li>
+<li>
+<p>The 64-bit compiler binary is a completely functional Windows executable image.</p>
+</li>
+<li>
+<p>This executable can run to completion on 64-bit Windows versions.</p>
+</li>
+<li>
+<p>Inside the compiled binary is a table of string constants.</p>
+</li>
+<li>
+<p>64-bit Epoch code can load those strings and route them out to the command-line console.</p>
+</li>
+<li>
+<p>A number of support DLL calls are involved in this process, including loading garbage collection metadata and stack tracing for identifying GC roots.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All told there are hundreds of thousands of lines of code involved. Building the 64-bit compiler takes about 164 seconds (just over two and a half minutes) when using debug versions of LLVM. (For comparison, the 32-bit compiler can self-host in under 20 seconds, but that&#8217;s an unfair comparison because that build process uses optimized Release versions of LLVM.)</p>
+</div>
+<div class="paragraph">
+<p>I&#8217;m pretty pleased with this progress. There are still many things left to get working, though.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>64-bit globals do not work correctly; all of them are currently stuffed into a single random address which may or may not crash when dereferenced.</p>
+</li>
+<li>
+<p>More support DLL calls need to be implemented or eliminated.</p>
+</li>
+<li>
+<p>Certain code constructs do not work correctly yet; this is worked around for the time being by not using them in the compiler, but they will be good to get working as soon as is practical.</p>
+</li>
+<li>
+<p>A large number of hacks and temporary shims exist in the linker. This will need to be cleaned up substantially before self-hosting is really practical.</p>
+</li>
+<li>
+<p>Debug metadata and symbols are not generated correctly yet.</p>
+</li>
+<li>
+<p>Visual Studio integration has a number of bugs, ranging from the pesky to the outright unusable.</p>
+</li>
+<li>
+<p>It is exceedingly likely that there will be bugs in the compiler, meaning that 64-bit self-hosting is still a ways out even if the basics are operational.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Making the highly optimisic presumption that this will all happen soon, I think it&#8217;s fair to say that once all of the above is addressed (and 64-bit self-hosting is complete) it will be time to cut another release of Epoch.</p>
+</div>
+<div class="paragraph">
+<p>In all probability, though, I&#8217;ll course-correct sometime between now and then, but it never hurts to have objectives!</p>
+</div>]]></description><link>https://apoch.github.io/blog/2017/05/30/Epoch-64-bit-compiler-progress.html</link><guid isPermaLink="true">https://apoch.github.io/blog/2017/05/30/Epoch-64-bit-compiler-progress.html</guid><dc:creator><![CDATA[Mike Lewis]]></dc:creator><pubDate>Tue, 30 May 2017 00:00:00 GMT</pubDate></item><item><title><![CDATA[Epoch Code-Generation Update]]></title><description><![CDATA[<div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
 <p>A few minutes ago, the first 64-bit self-hosted compiler for Epoch finished the code-generation process&#8230;&#8203; unsuccessfully.</p>

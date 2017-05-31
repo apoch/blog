@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Epoch 64-bit compiler progress</title>
+    <meta name="description" content="" />
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="shortcut icon" href="https://apoch.github.io/blog/favicon.ico">
+
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/casper/assets/css/screen.css?v=1496207858226" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic|Open+Sans:700,400" />
+
+    <link rel="canonical" href="https://apoch.github.io/blog/2017/05/30/Epoch-64-bit-compiler-progress.html" />
+    <meta name="referrer" content="origin" />
+    
+    <meta property="og:site_name" content="The Bag of Holding" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Epoch 64-bit compiler progress" />
+    <meta property="og:description" content="Just a short while ago, the first working 64-bit compiler for Epoch was produced! Well, &quot;working&quot; might be a minor stretch; it launches, prints a simple text banner message, and then exits cleanly. But that represents a lot of operational code by itself. The 32-bit compiler is able to lex," />
+    <meta property="og:url" content="https://apoch.github.io/blog/2017/05/30/Epoch-64-bit-compiler-progress.html" />
+    <meta property="article:published_time" content="2017-05-30T00:00:00.000Z" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Epoch 64-bit compiler progress" />
+    <meta name="twitter:description" content="Just a short while ago, the first working 64-bit compiler for Epoch was produced! Well, &quot;working&quot; might be a minor stretch; it launches, prints a simple text banner message, and then exits cleanly. But that represents a lot of operational code by itself. The 32-bit compiler is able to lex," />
+    <meta name="twitter:url" content="https://apoch.github.io/blog/2017/05/30/Epoch-64-bit-compiler-progress.html" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": "The Bag of Holding",
+    "author": {
+        "@type": "Person",
+        "name": "Mike Lewis",
+        "image": "https://avatars2.githubusercontent.com/u/321649?v=3",
+        "url": "https://apoch.github.io/blog/author/apoch/",
+        "sameAs": "https://apoch.github.io/",
+        "description": "Guild Wars 2 Project Technical Director @arenanet and author of the Epoch programming language."
+    },
+    "headline": "Epoch 64-bit compiler progress",
+    "url": "https://apoch.github.io/blog/2017/05/30/Epoch-64-bit-compiler-progress.html",
+    "datePublished": "2017-05-30T00:00:00.000Z",
+    "description": "Just a short while ago, the first working 64-bit compiler for Epoch was produced! Well, &quot;working&quot; might be a minor stretch; it launches, prints a simple text banner message, and then exits cleanly. But that represents a lot of operational code by itself. The 32-bit compiler is able to lex,"
+}
+    </script>
+
+    <meta name="generator" content="HubPress" />
+    <link rel="alternate" type="application/rss+xml" title="The Bag of Holding" href="https://apoch.github.io/blog/rss/" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/atom-one-dark.min.css">
+</head>
+<body class="post-template nav-closed">
+
+    
+
+    <div class="site-wrapper">
+
+        
+
+
+<header class="main-header post-head no-cover">
+    <nav class="main-nav  clearfix">
+        
+    </nav>
+</header>
+
+<main class="content" role="main">
+    <article class="post">
+
+        <header class="post-header">
+            <h1 class="post-title">Epoch 64-bit compiler progress</h1>
+            <section class="post-meta">
+                <time class="post-date" datetime="2017-05-30">30 May 2017</time> 
+            </section>
+        </header>
+
+        <section class="post-content">
+            <div class="paragraph">
+<p>Just a short while ago, the first working 64-bit compiler for <a href="https://github.com/apoch/epoch-language">Epoch</a> was produced!</p>
+</div>
+<div class="paragraph">
+<p>Well, "working" might be a minor stretch; it launches, prints a simple text banner message, and then exits cleanly. But that represents a lot of operational code by itself.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The 32-bit compiler is able to lex, parse, type-check, and code-gen the entirety of the 64-bit compiler&#8217;s source code.</p>
+</li>
+<li>
+<p>The 32-bit linker can emit 64-bit binaries, assisted by LLVM&#8217;s machine code generation facilities.</p>
+</li>
+<li>
+<p>The 64-bit compiler binary is a completely functional Windows executable image.</p>
+</li>
+<li>
+<p>This executable can run to completion on 64-bit Windows versions.</p>
+</li>
+<li>
+<p>Inside the compiled binary is a table of string constants.</p>
+</li>
+<li>
+<p>64-bit Epoch code can load those strings and route them out to the command-line console.</p>
+</li>
+<li>
+<p>A number of support DLL calls are involved in this process, including loading garbage collection metadata and stack tracing for identifying GC roots.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All told there are hundreds of thousands of lines of code involved. Building the 64-bit compiler takes about 164 seconds (just over two and a half minutes) when using debug versions of LLVM. (For comparison, the 32-bit compiler can self-host in under 20 seconds, but that&#8217;s an unfair comparison because that build process uses optimized Release versions of LLVM.)</p>
+</div>
+<div class="paragraph">
+<p>I&#8217;m pretty pleased with this progress. There are still many things left to get working, though.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>64-bit globals do not work correctly; all of them are currently stuffed into a single random address which may or may not crash when dereferenced.</p>
+</li>
+<li>
+<p>More support DLL calls need to be implemented or eliminated.</p>
+</li>
+<li>
+<p>Certain code constructs do not work correctly yet; this is worked around for the time being by not using them in the compiler, but they will be good to get working as soon as is practical.</p>
+</li>
+<li>
+<p>A large number of hacks and temporary shims exist in the linker. This will need to be cleaned up substantially before self-hosting is really practical.</p>
+</li>
+<li>
+<p>Debug metadata and symbols are not generated correctly yet.</p>
+</li>
+<li>
+<p>Visual Studio integration has a number of bugs, ranging from the pesky to the outright unusable.</p>
+</li>
+<li>
+<p>It is exceedingly likely that there will be bugs in the compiler, meaning that 64-bit self-hosting is still a ways out even if the basics are operational.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Making the highly optimisic presumption that this will all happen soon, I think it&#8217;s fair to say that once all of the above is addressed (and 64-bit self-hosting is complete) it will be time to cut another release of Epoch.</p>
+</div>
+<div class="paragraph">
+<p>In all probability, though, I&#8217;ll course-correct sometime between now and then, but it never hurts to have objectives!</p>
+</div>
+        </section>
+
+        <footer class="post-footer">
+
+
+            <figure class="author-image">
+                <a class="img" href="https://apoch.github.io/blog/author/apoch/" style="background-image: url(https://avatars2.githubusercontent.com/u/321649?v&#x3D;3)"><span class="hidden">Mike Lewis's Picture</span></a>
+            </figure>
+
+            <section class="author">
+                <h4><a href="https://apoch.github.io/blog/author/apoch/">Mike Lewis</a></h4>
+
+                    <p>Guild Wars 2 Project Technical Director @arenanet and author of the Epoch programming language.</p>
+                <div class="author-meta">
+                    <span class="author-location icon-location">Bellevue, WA</span>
+                    <span class="author-link icon-link"><a href="https://apoch.github.io/">https://apoch.github.io/</a></span>
+                </div>
+            </section>
+
+
+            <section class="share">
+                <h4>Share this post</h4>
+                <a class="icon-twitter" href="https://twitter.com/intent/tweet?text=Epoch%2064-bit%20compiler%20progress&amp;url=https://apoch.github.io/blog/2017/05/30/Epoch-64-bit-compiler-progress.html"
+                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <span class="hidden">Twitter</span>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=https://apoch.github.io/blog/2017/05/30/Epoch-64-bit-compiler-progress.html"
+                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <span class="hidden">Facebook</span>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=https://apoch.github.io/blog/2017/05/30/Epoch-64-bit-compiler-progress.html"
+                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <span class="hidden">Google+</span>
+                </a>
+            </section>
+
+        </footer>
+
+
+    </article>
+
+</main>
+
+<aside class="read-next">
+</aside>
+
+
+
+        <footer class="site-footer clearfix">
+            <section class="copyright"><a href="https://apoch.github.io/blog">The Bag of Holding</a> &copy; 2017</section>
+            <section class="poweredby">Proudly published with <a href="http://hubpress.io">HubPress</a></section>
+        </footer>
+
+    </div>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js?v="></script> <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.min.js?v="></script> <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js?v="></script> 
+      <script type="text/javascript">
+        jQuery( document ).ready(function() {
+          // change date with ago
+          jQuery('ago.ago').each(function(){
+            var element = jQuery(this).parent();
+            element.html( moment(element.text()).fromNow());
+          });
+        });
+
+        hljs.initHighlightingOnLoad();
+      </script>
+       
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/casper/assets/js/jquery.fitvids.js?v=1496207858226"></script>
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/casper/assets/js/index.js?v=1496207858226"></script>
+
+</body>
+</html>
