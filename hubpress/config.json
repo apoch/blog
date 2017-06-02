@@ -6,12 +6,12 @@
     "cname": ""
   },
   "theme": {
-    "name": "ghostium"
+    "name": "ichi"
   },
   "urls": {
     "site": "https://apoch.github.io/blog",
     "hubpress": "https://apoch.github.io/blog",
-    "theme": "//apoch.github.io/blog/themes/casper",
+    "theme": "//apoch.github.io/blog/themes/ghostium",
     "images": "https://apoch.github.io/blog/images"
   },
   "initialisationConfigComponent": {
