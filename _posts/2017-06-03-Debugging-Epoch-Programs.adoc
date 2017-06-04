@@ -1,0 +1,13 @@
+= Debugging Epoch Programs
+
+My recent adventures in self-hosting the 64-bit Epoch compiler have led me to a significant conclusion: it isn't worth trying to self-host a compiler when you can't debug the target language.
+
+A much better use of my time would be to improve the https://github.com/apoch/epoch-language/wiki/Knowledge-Dump---Debugging-Epoch-Programs[languishing PDB generation experiment] and get the code set up to actually emit usable debug symbols for Visual Studio and WinDbg.
+
+It presently takes several minutes to build a candidate compiler; given that fact, it makes little sense to try and brute-force my way to correctness. Debuggers are valuable tools and shouldn't be left as afterthoughts in the development of what aims to be a production language.
+
+So I'm dusting off the code for PDB emission and working on a tiny shim DLL that will provide some hard-coded one-off features that might be needed in the course of getting the legacy 32-bit compiler to generate debug information about 64-bit executables.
+
+One such thing that has come up is that, since vanilla Epoch lacks pointer arithmetic, it is hard to do serialization well. The shim DLL currently contains a single function, `GetBufferPtr`, which takes an input pointer and offset and returns the pointer adjusted by that offset. In other words, it's a glorified pointer-add.
+
+This isn't really satisfying to me as a long-term way to write Epoch code, but I've decided that debug information is more important than implementing 64-bit features, including self-hosting. As such, it'll have to suffice for a while.
