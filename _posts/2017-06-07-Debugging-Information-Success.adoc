@@ -1,0 +1,13 @@
+= Debugging Information Success
+
+Early this morning, https://github.com/apoch/epoch-language[Epoch] achieved a minor success in the debugging department. I was able to generate a working PDB file with symbols for a small test program, run the program in Visual Studio and WinDbg, and step through the disassembly.
+
+Along the way, the current Epoch function was correctly tracked, indicating two things: stack unwinding information is working correctly, and function-address-to-symbol mapping is working as well.
+
+The next step is to get line number information piped through to the PDB from the parser. This will be a major haul, but well worth it since it will allow source-level debugging of Epoch programs.
+
+Once that is complete, I plan to tackle type metadata and variable tracking, so that the values of variables can be visualized in the debugger. That's an even bigger lift, so I don't expect it any time soon.
+
+That said, I plan on waiting until debugging is in a good state before resuming work on self-hosting, because having debug information available makes that process vastly more convenient and approachable.
+
+All in all it's a good day for Epoch!
