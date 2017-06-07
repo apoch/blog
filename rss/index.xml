@@ -1,4 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[The Bag of Holding]]></title><description><![CDATA[A bottomless satchel once possessed by a knight-errant.]]></description><link>https://apoch.github.io/blog</link><image><url>/ThorDogOfThunder.jpg</url><title>The Bag of Holding</title><link>https://apoch.github.io/blog</link></image><generator>RSS for Node</generator><lastBuildDate>Sun, 04 Jun 2017 05:39:44 GMT</lastBuildDate><atom:link href="https://apoch.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Debugging Epoch Programs]]></title><description><![CDATA[<div class="paragraph">
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[The Bag of Holding]]></title><description><![CDATA[A bottomless satchel once possessed by a knight-errant.]]></description><link>https://apoch.github.io/blog</link><image><url>/ThorDogOfThunder.jpg</url><title>The Bag of Holding</title><link>https://apoch.github.io/blog</link></image><generator>RSS for Node</generator><lastBuildDate>Wed, 07 Jun 2017 14:44:25 GMT</lastBuildDate><atom:link href="https://apoch.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Debugging Information Success]]></title><description><![CDATA[<div class="paragraph">
+<p>Early this morning, <a href="https://github.com/apoch/epoch-language">Epoch</a> achieved a minor success in the debugging department. I was able to generate a working PDB file with symbols for a small test program, run the program in Visual Studio and WinDbg, and step through the disassembly.</p>
+</div>
+<div class="paragraph">
+<p>Along the way, the current Epoch function was correctly tracked, indicating two things: stack unwinding information is working correctly, and function-address-to-symbol mapping is working as well.</p>
+</div>
+<div class="paragraph">
+<p>The next step is to get line number information piped through to the PDB from the parser. This will be a major haul, but well worth it since it will allow source-level debugging of Epoch programs.</p>
+</div>
+<div class="paragraph">
+<p>Once that is complete, I plan to tackle type metadata and variable tracking, so that the values of variables can be visualized in the debugger. That&#8217;s an even bigger lift, so I don&#8217;t expect it any time soon.</p>
+</div>
+<div class="paragraph">
+<p>That said, I plan on waiting until debugging is in a good state before resuming work on self-hosting, because having debug information available makes that process vastly more convenient and approachable.</p>
+</div>
+<div class="paragraph">
+<p>All in all it&#8217;s a good day for Epoch!</p>
+</div>]]></description><link>https://apoch.github.io/blog/2017/06/07/Debugging-Information-Success.html</link><guid isPermaLink="true">https://apoch.github.io/blog/2017/06/07/Debugging-Information-Success.html</guid><dc:creator><![CDATA[Mike Lewis]]></dc:creator><pubDate>Wed, 07 Jun 2017 00:00:00 GMT</pubDate></item><item><title><![CDATA[Debugging Epoch Programs]]></title><description><![CDATA[<div class="paragraph">
 <p>My recent adventures in self-hosting the 64-bit Epoch compiler have led me to a significant conclusion: it isn&#8217;t worth trying to self-host a compiler when you can&#8217;t debug the target language.</p>
 </div>
 <div class="paragraph">
