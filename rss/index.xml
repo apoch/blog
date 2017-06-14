@@ -1,4 +1,106 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[The Bag of Holding]]></title><description><![CDATA[A bottomless satchel once possessed by a knight-errant.]]></description><link>https://apoch.github.io/blog</link><image><url>/ThorDogOfThunder.jpg</url><title>The Bag of Holding</title><link>https://apoch.github.io/blog</link></image><generator>RSS for Node</generator><lastBuildDate>Wed, 07 Jun 2017 14:44:25 GMT</lastBuildDate><atom:link href="https://apoch.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Debugging Information Success]]></title><description><![CDATA[<div class="paragraph">
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[The Bag of Holding]]></title><description><![CDATA[A bottomless satchel once possessed by a knight-errant.]]></description><link>https://apoch.github.io/blog</link><image><url>/ThorDogOfThunder.jpg</url><title>The Bag of Holding</title><link>https://apoch.github.io/blog</link></image><generator>RSS for Node</generator><lastBuildDate>Wed, 14 Jun 2017 03:10:22 GMT</lastBuildDate><atom:link href="https://apoch.github.io/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Using Poison to Reverse Engineer Code]]></title><description><![CDATA[<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Recently I&#8217;ve been working on a rather difficult task, namely creating <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/specify-symbol-dot-pdb-and-source-files-in-the-visual-studio-debugger">PDB debug database files</a> from the <a href="https://github.com/apoch/epoch-language">Epoch Language</a> compiler toolchain.</p>
+</div>
+<div class="paragraph">
+<p>This is difficult in part because the format of PDB files is generally not well-understood, and is certainly poorly documented. I can&#8217;t go much further without a hearty thanks to the LLVM project and particularly their tool <code>llvm-pdbdump</code> which makes it much easier to test whether or not a generated PDB is sane. When <code>llvm-pdbdump</code> has good information about the state of a given PDB, it is invaluable; and when it falls short, as is inevitably the case with a format like PDB, it at least gives me a starting point for understanding why things have gone wrong.</p>
+</div>
+<div class="paragraph">
+<p>However, there is another tool, from Microsoft themselves, called <code>Dia2Dump.exe</code> which uses an <em>authoritative</em> implementation of the PDB format, via the file <code>MsDia140.dll</code> on Visual Studio 2015. This library is (as near as I can tell) close to or identical to the code used by Visual Studio itself for debugging programs. It also seems to parallel the implementations in <code>WinDbg</code> and <code>DbgHelp.dll</code>, both of which I use extensively in my research.</p>
+</div>
+<div class="paragraph">
+<p>Last but not least, I must mention the <a href="https://github.com/Microsoft/microsoft-pdb/">Microsoft-PDB</a> repo on GitHub, which is <em>partial</em> source for the implementation of the PDB format. It does not actually compile right now, so it&#8217;s hard to use, but it has a significant purpose for me: I can cross-reference functions in <code>MsDia140.dll</code> with this code, and use that for some serious reverse-engineering.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_debugging">Debugging</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Sometimes when feeding data into a black box like <code>MsDia140.dll</code> it can be hard to know what code paths are taken and why. For example, let&#8217;s look at the function <code>GSI1::readHash</code> (see <a href="https://github.com/Microsoft/microsoft-pdb/blob/master/PDB/dbi/gsi.cpp#L66">here</a> to follow along in the source).</p>
+</div>
+<div class="paragraph">
+<p>This function does some stuff I still don&#8217;t fully understand, so let&#8217;s walk through the process of gaining more understanding.</p>
+</div>
+<div class="paragraph">
+<p>First we need a partially malformed PDB. This is easy to do since PDB files are sensitive to tiny changes, often in non-obvious ways. In particular, I&#8217;m going to work on the <code>Publics</code> stream. This is a fragment of a <em>Multi-Stream File</em> (aka MSF) which contains, among other things, publicly visible <em>debug symbols</em> for some program.</p>
+</div>
+<div class="paragraph">
+<p>At the beginning of the stream, there is a structure which <code>llvm-pdbdump</code> is sadly cryptic about. Thankfully, <code>llvm-pdbdump</code> contains some sanity checks which seem to align well with the checks made by Microsoft&#8217;s code, so it&#8217;s at least easy to use the tool to verify what we&#8217;re spitting out.</p>
+</div>
+<div class="paragraph">
+<p><code>readHash</code> is responsible for decoding part of this data structure, which appears to be some kind of hash table for accelerating symbol lookups. Inside the code for <code>readHash</code> (see link above) there is a call to a pesky function called <code>fixHashIn</code>. By attaching WinDbg to a running copy of <code>Dia2Dump.exe</code> and setting liberal numbers of breakpoints, I traced a failure in my PDB generation code to this single function. <code>fixHashIn</code> is vomiting because I&#8217;m feeding it data it doesn&#8217;t like.</p>
+</div>
+<div class="paragraph">
+<p>The first thing to note is that <code>fixHashIn</code> begins with a decrement instruction to decrease the value of one of its parameters. This parameter is supposedly the number of buckets in the hash table, or so I extrapolate from the source.</p>
+</div>
+<div class="paragraph">
+<p>In my case, the parameter has a value of zero! Clearly I don&#8217;t want my hash table to have zero buckets, so it becomes apparent why <code>fixHashIn</code> is choking. What I <em>don&#8217;t</em> immediately understand is <em>why</em> it thinks zero is the number of buckets&#8230;&#8203; I had <em>thought</em> that I was passing a value in (8 bytes per entry * 16 entries) that would work. Clearly I was wrong, but where was the zero coming from?</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_msf_files">MSF Files</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A little more background is in order. In an MSF file (MSF being a superset of PDB files), data is divided into <em>streams</em>, each of which is built up of one or more <em>blocks</em>. A block can be different sizes, but I&#8217;m using 1KB (1024 bytes) for convenience. Data not used is filled with junk bytes.</p>
+</div>
+<div class="paragraph">
+<p>Crucially, I pad my blocks with zeroes. If somehow the PDB interpreter is reading one of my padding bytes, it might be incorrectly assuming I want to feed it a zero-size hash table&#8230;&#8203; obviously a problem. So what to do?</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_poison">Poison</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>And now the meat of everything!</p>
+</div>
+<div class="paragraph">
+<p>Instead of padding my file with zeroes, I use carefully crafted <em>poison values</em>. For my purposes I&#8217;m working with 32-bit data, so a poison value is usually 4 bytes long. A good example is <code>0xfeedface</code> which is a funny but valid hex number that happens to be the right size.</p>
+</div>
+<div class="paragraph">
+<p>The important thing is that we can&#8217;t just pad <em>every</em> 32-bit slot with <code>0xfeedface</code>. Instead, we want to make <em>permutations</em> of the poison value - one unique permutation per slot. Every possible 4-byte sequence of my PDB&#8217;s "padding" is now a unique string of digits.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s the magic part: when I run this in the debugger, I can walk into the <code>fixHashIn</code> function, and look at its parameters.</p>
+</div>
+<div class="paragraph">
+<p>My first run of this process is surprising - despite poisoning a bunch of data around where I thought this zero was coming from, the value is still zero when we reach the <code>fixHashIn</code> function! This indicates one of two things.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The value is read from a place I didn&#8217;t poison</p>
+</li>
+<li>
+<p>The value might be computed somehow</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>To rule out the possibility that I&#8217;m not poisoning enough, I expand the poison to the entire file instead of just one block&#8217;s worth of padding bytes. The debugger still stubbornly shows the parameter as zero, meaning that <em>the zero is being computed from some other data being fed in, not read directly from the file on disk</em>.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/Microsoft/microsoft-pdb/blob/master/PDB/dbi/gsi.cpp#L96">This line</a> of the Microsoft PDB source is illuminating&#8230;&#8203; but <a href="https://github.com/Microsoft/microsoft-pdb/blob/master/PDB/dbi/gsi.cpp#L65">this line</a> even more so. At line 65 is a comment stating that <code>fixHashIn</code> is called from <em>two</em> places&#8230;&#8203; one of them is the loader for the Publics stream, but one is for a totally unrelated stream called <code>Globals</code>!</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusions">Conclusions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It turns out I&#8217;ve been hitting breakpoints all evening in <code>fixHashIn</code>, but the call stack is wrong. The calls I&#8217;ve been seeing are from a totally different stream of data.</p>
+</div>
+<div class="paragraph">
+<p>This post may not have a cheerful ending, but I hope the value of poisoning data is clear: I may have taken <em>days</em> to realize my mistake without having 100% proof that the evil zero was not coming from my Publics stream.</p>
+</div>
+<div class="paragraph">
+<p>In any event, I use the poison technique a lot, and this is just one sampling of my adventures with the PDB format. Maybe I&#8217;ll have a better story of success tomorrow!</p>
+</div>
+</div>
+</div>]]></description><link>https://apoch.github.io/blog/2017/06/13/Using-Poison-to-Reverse-Engineer-Code.html</link><guid isPermaLink="true">https://apoch.github.io/blog/2017/06/13/Using-Poison-to-Reverse-Engineer-Code.html</guid><dc:creator><![CDATA[Mike Lewis]]></dc:creator><pubDate>Tue, 13 Jun 2017 00:00:00 GMT</pubDate></item><item><title><![CDATA[Debugging Information Success]]></title><description><![CDATA[<div class="paragraph">
 <p>Early this morning, <a href="https://github.com/apoch/epoch-language">Epoch</a> achieved a minor success in the debugging department. I was able to generate a working PDB file with symbols for a small test program, run the program in Visual Studio and WinDbg, and step through the disassembly.</p>
 </div>
 <div class="paragraph">
