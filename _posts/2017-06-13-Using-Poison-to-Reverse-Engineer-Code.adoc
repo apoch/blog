@@ -1,0 +1,62 @@
+= Using Poison to Reverse Engineer Code
+
+Recently I've been working on a rather difficult task, namely creating https://docs.microsoft.com/en-us/visualstudio/debugger/specify-symbol-dot-pdb-and-source-files-in-the-visual-studio-debugger[PDB debug database files] from the https://github.com/apoch/epoch-language[Epoch Language] compiler toolchain.
+
+This is difficult in part because the format of PDB files is generally not well-understood, and is certainly poorly documented. I can't go much further without a hearty thanks to the LLVM project and particularly their tool `llvm-pdbdump` which makes it much easier to test whether or not a generated PDB is sane. When `llvm-pdbdump` has good information about the state of a given PDB, it is invaluable; and when it falls short, as is inevitably the case with a format like PDB, it at least gives me a starting point for understanding why things have gone wrong.
+
+However, there is another tool, from Microsoft themselves, called `Dia2Dump.exe` which uses an _authoritative_ implementation of the PDB format, via the file `MsDia140.dll` on Visual Studio 2015. This library is (as near as I can tell) close to or identical to the code used by Visual Studio itself for debugging programs. It also seems to parallel the implementations in `WinDbg` and `DbgHelp.dll`, both of which I use extensively in my research.
+
+Last but not least, I must mention the https://github.com/Microsoft/microsoft-pdb/[Microsoft-PDB] repo on GitHub, which is _partial_ source for the implementation of the PDB format. It does not actually compile right now, so it's hard to use, but it has a significant purpose for me: I can cross-reference functions in `MsDia140.dll` with this code, and use that for some serious reverse-engineering.
+
+== Debugging
+
+Sometimes when feeding data into a black box like `MsDia140.dll` it can be hard to know what code paths are taken and why. For example, let's look at the function `GSI1::readHash` (see https://github.com/Microsoft/microsoft-pdb/blob/master/PDB/dbi/gsi.cpp#L66[here] to follow along in the source).
+
+This function does some stuff I still don't fully understand, so let's walk through the process of gaining more understanding.
+
+First we need a partially malformed PDB. This is easy to do since PDB files are sensitive to tiny changes, often in non-obvious ways. In particular, I'm going to work on the `Publics` stream. This is a fragment of a _Multi-Stream File_ (aka MSF) which contains, among other things, publicly visible _debug symbols_ for some program.
+
+At the beginning of the stream, there is a structure which `llvm-pdbdump` is sadly cryptic about. Thankfully, `llvm-pdbdump` contains some sanity checks which seem to align well with the checks made by Microsoft's code, so it's at least easy to use the tool to verify what we're spitting out.
+
+`readHash` is responsible for decoding part of this data structure, which appears to be some kind of hash table for accelerating symbol lookups. Inside the code for `readHash` (see link above) there is a call to a pesky function called `fixHashIn`. By attaching WinDbg to a running copy of `Dia2Dump.exe` and setting liberal numbers of breakpoints, I traced a failure in my PDB generation code to this single function. `fixHashIn` is vomiting because I'm feeding it data it doesn't like.
+
+The first thing to note is that `fixHashIn` begins with a decrement instruction to decrease the value of one of its parameters. This parameter is supposedly the number of buckets in the hash table, or so I extrapolate from the source. 
+
+In my case, the parameter has a value of zero! Clearly I don't want my hash table to have zero buckets, so it becomes apparent why `fixHashIn` is choking. What I _don't_ immediately understand is _why_ it thinks zero is the number of buckets... I had _thought_ that I was passing a value in (8 bytes per entry * 16 entries) that would work. Clearly I was wrong, but where was the zero coming from?
+
+== MSF Files
+
+A little more background is in order. In an MSF file (MSF being a superset of PDB files), data is divided into _streams_, each of which is built up of one or more _blocks_. A block can be different sizes, but I'm using 1KB (1024 bytes) for convenience. Data not used is filled with junk bytes.
+
+Crucially, I pad my blocks with zeroes. If somehow the PDB interpreter is reading one of my padding bytes, it might be incorrectly assuming I want to feed it a zero-size hash table... obviously a problem. So what to do?
+
+== Poison
+
+And now the meat of everything!
+
+Instead of padding my file with zeroes, I use carefully crafted _poison values_. For my purposes I'm working with 32-bit data, so a poison value is usually 4 bytes long. A good example is `0xfeedface` which is a funny but valid hex number that happens to be the right size.
+
+The important thing is that we can't just pad _every_ 32-bit slot with `0xfeedface`. Instead, we want to make _permutations_ of the poison value - one unique permutation per slot. Every possible 4-byte sequence of my PDB's "padding" is now a unique string of digits.
+
+Here's the magic part: when I run this in the debugger, I can walk into the `fixHashIn` function, and look at its parameters.
+
+My first run of this process is surprising - despite poisoning a bunch of data around where I thought this zero was coming from, the value is still zero when we reach the `fixHashIn` function! This indicates one of two things.
+
+. The value is read from a place I didn't poison 
+. The value might be computed somehow
+
+To rule out the possibility that I'm not poisoning enough, I expand the poison to the entire file instead of just one block's worth of padding bytes. The debugger still stubbornly shows the parameter as zero, meaning that _the zero is being computed from some other data being fed in, not read directly from the file on disk_.
+
+https://github.com/Microsoft/microsoft-pdb/blob/master/PDB/dbi/gsi.cpp#L96[This line] of the Microsoft PDB source is illuminating... but https://github.com/Microsoft/microsoft-pdb/blob/master/PDB/dbi/gsi.cpp#L65[this line] even more so. At line 65 is a comment stating that `fixHashIn` is called from _two_ places... one of them is the loader for the Publics stream, but one is for a totally unrelated stream called `Globals`!
+
+== Conclusions
+
+It turns out I've been hitting breakpoints all evening in `fixHashIn`, but the call stack is wrong. The calls I've been seeing are from a totally different stream of data.
+
+This post may not have a cheerful ending, but I hope the value of poisoning data is clear: I may have taken _days_ to realize my mistake without having 100% proof that the evil zero was not coming from my Publics stream.
+
+In any event, I use the poison technique a lot, and this is just one sampling of my adventures with the PDB format. Maybe I'll have a better story of success tomorrow!
+
+
+
+
