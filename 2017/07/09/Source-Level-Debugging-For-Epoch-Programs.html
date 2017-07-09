@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Source-Level Debugging For Epoch Programs</title>
+    <meta name="description" content="" />
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="shortcut icon" href="https://apoch.github.io/blog/favicon.ico">
+
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/vendor/fastclick.js?v=1499613389893"></script>
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/vendor/modernizr.js?v=1499613389893"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/normalize.css?v=1499613389893" />
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/foundation.min.css?v=1499613389893" />
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/outdatedBrowser.min.css?v=1499613389893">
+    <![endif]-->
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/fonts/foundation-icons/foundation-icons.css?v=1499613389893" />
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/styles.css?v=1499613389893" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:300,700,400|Source+Sans+Pro:300,400,600,700,900,300italic,400italic,600italic,700italic,900italic" />
+
+    <link rel="canonical" href="https://apoch.github.io/blog/2017/07/09/Source-Level-Debugging-For-Epoch-Programs.html" />
+    <meta name="referrer" content="origin" />
+    
+    <meta property="og:site_name" content="The Bag of Holding" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Source-Level Debugging For Epoch Programs" />
+    <meta property="og:description" content="This weekend marks a major milestone for the development of the Epoch programming language. For the first time, Windows debuggers such as Visual Studio and WinDbg can perform source-level debugging on Epoch programs. In a nutshell, this means that the comfortable modern development features of setting breakpoints and stepping through" />
+    <meta property="og:url" content="https://apoch.github.io/blog/2017/07/09/Source-Level-Debugging-For-Epoch-Programs.html" />
+    <meta property="article:published_time" content="2017-07-09T00:00:00.000Z" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Source-Level Debugging For Epoch Programs" />
+    <meta name="twitter:description" content="This weekend marks a major milestone for the development of the Epoch programming language. For the first time, Windows debuggers such as Visual Studio and WinDbg can perform source-level debugging on Epoch programs. In a nutshell, this means that the comfortable modern development features of setting breakpoints and stepping through" />
+    <meta name="twitter:url" content="https://apoch.github.io/blog/2017/07/09/Source-Level-Debugging-For-Epoch-Programs.html" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": "The Bag of Holding",
+    "author": {
+        "@type": "Person",
+        "name": "Mike Lewis",
+        "image": "https://avatars2.githubusercontent.com/u/321649?v=3",
+        "url": "https://apoch.github.io/blog/author/apoch/",
+        "sameAs": "https://apoch.github.io/",
+        "description": "Guild Wars 2 Project Technical Director @arenanet and author of the Epoch programming language."
+    },
+    "headline": "Source-Level Debugging For Epoch Programs",
+    "url": "https://apoch.github.io/blog/2017/07/09/Source-Level-Debugging-For-Epoch-Programs.html",
+    "datePublished": "2017-07-09T00:00:00.000Z",
+    "description": "This weekend marks a major milestone for the development of the Epoch programming language. For the first time, Windows debuggers such as Visual Studio and WinDbg can perform source-level debugging on Epoch programs. In a nutshell, this means that the comfortable modern development features of setting breakpoints and stepping through"
+}
+    </script>
+
+    <meta name="generator" content="HubPress" />
+    <link rel="alternate" type="application/rss+xml" title="The Bag of Holding" href="https://apoch.github.io/blog/rss/" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/atom-one-dark.min.css">
+</head>
+<body class="post-template">
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdate" href="http://outdatedbrowser.com/">Update my browser now</a></p>
+</div>
+
+<nav class="top-bar hide-for-large-up" data-topbar style="background: none">
+  <ul class="title-area">
+    <li class="name">
+
+    </li>
+    <li class="home"><a class="fi-home" href="https://apoch.github.io/blog"></a></li>
+    <li class="toggle-topbar"><a href="#" id="trigger-overlay" class="fi-list"></a></li>
+  </ul>
+
+<div class="overlay overlay-scale">
+    <button type="button" class="overlay-close">Close</button>
+    <nav>
+        <ul>
+            <li><a href="https://apoch.github.io/blog">Home</a></li>
+        </ul>
+    </nav>
+</div>
+
+</nav>
+
+<div class="row">
+
+<div class="small-16 medium-16 large-4 columns right head-area bgimage" style="background-image: url(/ThorDogOfThunder.jpg)">
+
+<header class="site-head">
+    <div class="vertical">
+        <div class="site-head-content inner">
+            <ul class="side-nav blog-menu show-for-large-up">
+                <li><a class="fi-home" href="https://apoch.github.io/blog"></a></li>
+                <li><a class="fi-torso" href="https://apoch.github.io/blog/about.html"></a></li>
+                <li><a class="fi-mail" href="https://apoch.github.io/blog/contact.html"></a></li>
+            </ul>
+            
+            <h1 class="blog-title">The Bag of Holding</h1>
+            <hr>
+            <p class="blog-description">A bottomless satchel once possessed by a knight-errant.</p>
+            <div class="blog-network">
+<!--                 <a href="#" class="fi-social-pinterest"></a>
+                <a href="#" class="fi-social-linkedin"></a>
+                <a href="#" class="fi-social-behance"></a>
+                <a href="#" class="fi-social-deviant-art"></a>
+                <a href="#" class="fi-social-dribbble"></a>
+                <a href="#" class="fi-social-flickr"></a>
+                <a href="#" class="fi-social-github"></a>
+                <a href="#" class="fi-social-skype"></a>
+                <a href="#" class="fi-social-snapchat"></a>
+                <a href="#" class="fi-social-steam"></a>
+                <a href="#" class="fi-social-xbox"></a>
+                <a href="#" class="fi-social-reddit"></a> -->
+                  <a href="https://github.com/apoch" class="fi-social-github"></a>
+                  <a href="https://twitter.com/ApochPiQ" class="fi-social-twitter"></a>
+            </div>
+        </div>
+    </div>
+</header>
+
+</div>
+
+
+<div class="small-16 medium-16 large-12 columns main-column left">
+    
+
+<main class="content" role="main">
+
+    <article class="post">
+
+
+            <h1 class="post-title">Source-Level Debugging For Epoch Programs</h1>
+
+            <span class="post-meta label"><time datetime="2017-07-09">09 Jul 2017</time></span>
+
+            <section class="post-content">
+                <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This weekend marks a major milestone for the development of the <a href="https://github.com/apoch/epoch-language">Epoch programming language</a>. For the first time, Windows debuggers such as Visual Studio and WinDbg can perform <strong>source-level debugging</strong> on Epoch programs.</p>
+</div>
+<div class="paragraph">
+<p>In a nutshell, this means that the comfortable modern development features of setting breakpoints and stepping through code are now available to Epoch programmers.</p>
+</div>
+<div class="paragraph">
+<p>One notable thing left to achieve is <strong>runtime state inspection</strong>. There is currently not enough data generated by the Epoch compiler to reliably inspect variables, function parameters, and so on in the debugger. This will be my next major point of focus.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://github.com/apoch/epoch-language/raw/master/Images/Screenshots/Debugging-VS2015-Source-Breakpoint.png" alt="Visual Studio 2015 Debugging a Simple Epoch Program">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://github.com/apoch/epoch-language/raw/master/Images/Screenshots/Debugging-WinDbg-Source-Breakpoint.png" alt="WinDbg Debugging the Same Epoch Program">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_we_got_here">How We Got Here</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Attaining this functionality was not easy, but it was definitely worth the investment. It all started almost exactly a year ago, when I decided that being unable to debug the self-hosting process for 64-bit Epoch was unacceptable.</p>
+</div>
+<div class="paragraph">
+<p>Initially debug information was generated via piping some bogus line numbers into <a href="http://llvm.org/">LLVM</a> and then routing the generated block of CodeView symbols into <code>MSPDB140.dll</code> to generate a somewhat-working PDB file on disk. This implementation took about two weeks.</p>
+</div>
+<div class="paragraph">
+<p>That wasn&#8217;t enough, though; it introduced a heavy dependency on Visual Studio (something I&#8217;ve been keen to avoid, despite strongly encouraging use of VS with Epoch) and also had limitations via the API of <code>MSPDB140.dll</code> that were&#8230;&#8203; inscrutable, to say the least.</p>
+</div>
+<div class="paragraph">
+<p>So I set out in search of a complete understanding of the PDB file format and how to generate my own debug information for it. The intervening year wasn&#8217;t all dedicated to PDB work; a fair amount of time went into Visual Studio integration and other tidbits of self-hosting effort. (Not to mention there were a few major spans of downtime. This gets exhausting after a while!)</p>
+</div>
+<div class="paragraph">
+<p>The <a href="https://github.com/apoch/epoch-language/commits/master">Epoch repo commit log</a> shows the gory details of how everything came together, but the high-level is pretty simple; using a suite of tools, I reverse engineered large sections of the PDB format and developed an Epoch implementation of code to write them out.</p>
+</div>
+<div class="paragraph">
+<p>Noteworthy projects:
+ * <a href="https://github.com/llvm-mirror/llvm/tree/master/tools/llvm-pdbutil">LLVM&#8217;s pdbutil</a>
+ * <a href="https://github.com/Microsoft/microsoft-pdb">Microsoft&#8217;s PDB repository</a> (and especially the bundled tool <code>cvdump</code>)
+ * <a href="https://msdn.microsoft.com/en-us/library/b5ke49f5.aspx?f=255&amp;MSPPError=-2147217396">Microsoft&#8217;s DIA2Dump utility</a>
+ * <a href="https://github.com/apoch/epoch-language/tree/master/Tools/MSFViewer">My own concoction, MSFViewer, which displays structural information about PDBs</a></p>
+</div>
+<div class="paragraph">
+<p>Target debuggers have been VS2015 and WinDbg, both of which work now with source-level breakpoints and stepping. x64dbg also sort-of works, although it doesn&#8217;t like to display source for some reason; everything else seems to be fine, so I don&#8217;t know the tool well enough to say if it&#8217;s my bug or theirs.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_comes_next">What Comes Next</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As alluded to above, my next major project is to get variable data inspection working. This is a dark corner of the PDB format that seems poorly understood in the community, so it should be exciting to try and forge ahead here.</p>
+</div>
+<div class="paragraph">
+<p>At a minimum, I&#8217;ll need to start generating <strong>types data</strong> in the PDBs, so that debuggers know how to interpret various memory addresses correctly. There&#8217;s probably some other voodoo too, but that&#8217;ll have to wait until I discover what&#8217;s in store.</p>
+</div>
+</div>
+</div>
+                        <aside class="tags fi-pricetag-multiple">No tag</aside>
+            </section>
+            <hr>
+            <footer class="post-footer">
+
+                <section class="share">
+                    <h4>Liked this post ? Share it.</h4>
+                    <a class="fi-social-facebook" href="https://www.facebook.com/sharer/sharer.php?u=https://apoch.github.io/blog/2017/07/09/Source-Level-Debugging-For-Epoch-Programs.html"
+                        onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    </a>
+                    <a class="fi-social-twitter" href="https://twitter.com/share?text=Source-Level%20Debugging%20For%20Epoch%20Programs&amp;url=https://apoch.github.io/blog/2017/07/09/Source-Level-Debugging-For-Epoch-Programs.html"
+                        onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    </a>
+                    <a class="fi-social-google-plus" href="https://plus.google.com/share?url=https://apoch.github.io/blog/2017/07/09/Source-Level-Debugging-For-Epoch-Programs.html"
+                       onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    </a>
+                </section>
+
+                <section class="author">
+                    <header>
+                        <span>About the author</span>
+                    </header>
+                    <section>
+                        <h4>Mike Lewis</h4>
+                        <img src="https://avatars2.githubusercontent.com/u/321649?v&#x3D;3">
+                        <span>Bellevue, WA</span>
+                        <a href="https://apoch.github.io/">https://apoch.github.io/</a>
+                    </section>
+                    <footer>
+                         <p>Guild Wars 2 Project Technical Director @arenanet and author of the Epoch programming language.</p>
+                    </footer>
+                </section>
+
+        <div class="clearfix"></div>
+                    <hr>
+
+            </footer>
+
+        <h3 class="title-disqus"><span class="fi-comments"></span>Discussions</h3>
+
+
+
+
+    </article>
+
+</main>
+
+</div>
+
+</div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js?v="></script> <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.min.js?v="></script> <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js?v="></script> 
+      <script type="text/javascript">
+        jQuery( document ).ready(function() {
+          // change date with ago
+          jQuery('ago.ago').each(function(){
+            var element = jQuery(this).parent();
+            element.html( moment(element.text()).fromNow());
+          });
+        });
+
+        hljs.initHighlightingOnLoad();
+      </script>
+       
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    <!--[if lte IE 8]>
+        <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/outdatedBrowser.min.js?v=1499613389893"></script>
+    <![endif]-->
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/min/built.js?v=1499613389893"></script>
+
+    <script>
+      $(document).foundation();
+    </script>
+
+</body>
+</html>
