@@ -12,17 +12,17 @@
 
     <link rel="shortcut icon" href="https://apoch.github.io/blog/favicon.ico">
 
-    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/vendor/fastclick.js?v=1499613389893"></script>
-    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/vendor/modernizr.js?v=1499613389893"></script>
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/vendor/fastclick.js?v=1499613842278"></script>
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/vendor/modernizr.js?v=1499613842278"></script>
 
 
-    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/normalize.css?v=1499613389893" />
-    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/foundation.min.css?v=1499613389893" />
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/normalize.css?v=1499613842278" />
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/foundation.min.css?v=1499613842278" />
     <!--[if lte IE 8]>
-        <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/outdatedBrowser.min.css?v=1499613389893">
+        <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/outdatedBrowser.min.css?v=1499613842278">
     <![endif]-->
-    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/fonts/foundation-icons/foundation-icons.css?v=1499613389893" />
-    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/styles.css?v=1499613389893" />
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/fonts/foundation-icons/foundation-icons.css?v=1499613842278" />
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/styles.css?v=1499613842278" />
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:300,700,400|Source+Sans+Pro:300,400,600,700,900,300italic,400italic,600italic,700italic,900italic" />
 
     <link rel="canonical" href="https://apoch.github.io/blog/2017/07/09/Source-Level-Debugging-For-Epoch-Programs.html" />
@@ -184,11 +184,23 @@
 <p>The <a href="https://github.com/apoch/epoch-language/commits/master">Epoch repo commit log</a> shows the gory details of how everything came together, but the high-level is pretty simple; using a suite of tools, I reverse engineered large sections of the PDB format and developed an Epoch implementation of code to write them out.</p>
 </div>
 <div class="paragraph">
-<p>Noteworthy projects:
- * <a href="https://github.com/llvm-mirror/llvm/tree/master/tools/llvm-pdbutil">LLVM&#8217;s pdbutil</a>
- * <a href="https://github.com/Microsoft/microsoft-pdb">Microsoft&#8217;s PDB repository</a> (and especially the bundled tool <code>cvdump</code>)
- * <a href="https://msdn.microsoft.com/en-us/library/b5ke49f5.aspx?f=255&amp;MSPPError=-2147217396">Microsoft&#8217;s DIA2Dump utility</a>
- * <a href="https://github.com/apoch/epoch-language/tree/master/Tools/MSFViewer">My own concoction, MSFViewer, which displays structural information about PDBs</a></p>
+<p>Noteworthy projects:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="https://github.com/llvm-mirror/llvm/tree/master/tools/llvm-pdbutil">LLVM&#8217;s pdbutil</a></p>
+</li>
+<li>
+<p><a href="https://github.com/Microsoft/microsoft-pdb">Microsoft&#8217;s PDB repository</a> (and especially the bundled tool <code>cvdump</code>)</p>
+</li>
+<li>
+<p><a href="https://msdn.microsoft.com/en-us/library/b5ke49f5.aspx?f=255&amp;MSPPError=-2147217396">Microsoft&#8217;s DIA2Dump utility</a></p>
+</li>
+<li>
+<p><a href="https://github.com/apoch/epoch-language/tree/master/Tools/MSFViewer">My own concoction, MSFViewer, which displays structural information about PDBs</a></p>
+</li>
+</ol>
 </div>
 <div class="paragraph">
 <p>Target debuggers have been VS2015 and WinDbg, both of which work now with source-level breakpoints and stepping. x64dbg also sort-of works, although it doesn&#8217;t like to display source for some reason; everything else seems to be fine, so I don&#8217;t know the tool well enough to say if it&#8217;s my bug or theirs.</p>
@@ -273,9 +285,9 @@
     <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     <!--[if lte IE 8]>
-        <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/outdatedBrowser.min.js?v=1499613389893"></script>
+        <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/outdatedBrowser.min.js?v=1499613842278"></script>
     <![endif]-->
-    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/min/built.js?v=1499613389893"></script>
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/min/built.js?v=1499613842278"></script>
 
     <script>
       $(document).foundation();
