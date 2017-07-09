@@ -24,10 +24,12 @@ So I set out in search of a complete understanding of the PDB file format and ho
 The https://github.com/apoch/epoch-language/commits/master[Epoch repo commit log] shows the gory details of how everything came together, but the high-level is pretty simple; using a suite of tools, I reverse engineered large sections of the PDB format and developed an Epoch implementation of code to write them out.
 
 Noteworthy projects:
- * https://github.com/llvm-mirror/llvm/tree/master/tools/llvm-pdbutil[LLVM's pdbutil]
- * https://github.com/Microsoft/microsoft-pdb[Microsoft's PDB repository] (and especially the bundled tool `cvdump`)
- * https://msdn.microsoft.com/en-us/library/b5ke49f5.aspx?f=255&MSPPError=-2147217396[Microsoft's DIA2Dump utility]
- * https://github.com/apoch/epoch-language/tree/master/Tools/MSFViewer[My own concoction, MSFViewer, which displays structural information about PDBs]
+
+. https://github.com/llvm-mirror/llvm/tree/master/tools/llvm-pdbutil[LLVM's pdbutil]
+. https://github.com/Microsoft/microsoft-pdb[Microsoft's PDB repository] (and especially the bundled tool `cvdump`)
+. https://msdn.microsoft.com/en-us/library/b5ke49f5.aspx?f=255&MSPPError=-2147217396[Microsoft's DIA2Dump utility]
+. https://github.com/apoch/epoch-language/tree/master/Tools/MSFViewer[My own concoction, MSFViewer, which displays structural information about PDBs]
+
 
 Target debuggers have been VS2015 and WinDbg, both of which work now with source-level breakpoints and stepping. x64dbg also sort-of works, although it doesn't like to display source for some reason; everything else seems to be fine, so I don't know the tool well enough to say if it's my bug or theirs.
 
