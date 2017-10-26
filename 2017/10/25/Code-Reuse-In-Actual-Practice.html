@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Code Reuse In Actual Practice</title>
+    <meta name="description" content="" />
+
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="shortcut icon" href="https://apoch.github.io/blog/favicon.ico">
+
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/vendor/fastclick.js?v=1508976303507"></script>
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/vendor/modernizr.js?v=1508976303507"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/normalize.css?v=1508976303507" />
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/foundation.min.css?v=1508976303507" />
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/outdatedBrowser.min.css?v=1508976303507">
+    <![endif]-->
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/fonts/foundation-icons/foundation-icons.css?v=1508976303507" />
+    <link rel="stylesheet" type="text/css" href="//apoch.github.io/blog/themes/ichi/assets/css/styles.css?v=1508976303507" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:300,700,400|Source+Sans+Pro:300,400,600,700,900,300italic,400italic,600italic,700italic,900italic" />
+
+    <link rel="canonical" href="https://apoch.github.io/blog/2017/10/25/Code-Reuse-In-Actual-Practice.html" />
+    <meta name="referrer" content="origin" />
+    
+    <meta property="og:site_name" content="The Bag of Holding" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Code Reuse In Actual Practice" />
+    <meta property="og:description" content="It&amp;#8217;s very common to hear engineers talking about &quot;code reuse&quot; - particularly in a positive light. We love to say that we&amp;#8217;ll make our designs &quot;reusable&quot;. Most of the time the meaning of this is pretty well understood; someday, we want our code to be able" />
+    <meta property="og:url" content="https://apoch.github.io/blog/2017/10/25/Code-Reuse-In-Actual-Practice.html" />
+    <meta property="article:published_time" content="2017-10-25T00:00:00.000Z" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Code Reuse In Actual Practice" />
+    <meta name="twitter:description" content="It&amp;#8217;s very common to hear engineers talking about &quot;code reuse&quot; - particularly in a positive light. We love to say that we&amp;#8217;ll make our designs &quot;reusable&quot;. Most of the time the meaning of this is pretty well understood; someday, we want our code to be able" />
+    <meta name="twitter:url" content="https://apoch.github.io/blog/2017/10/25/Code-Reuse-In-Actual-Practice.html" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": "The Bag of Holding",
+    "author": {
+        "@type": "Person",
+        "name": "Mike Lewis",
+        "image": "https://avatars1.githubusercontent.com/u/321649?v=4",
+        "url": "https://apoch.github.io/blog/author/apoch/",
+        "sameAs": "https://apoch.github.io/",
+        "description": "Guild Wars 2 Project Technical Director @arenanet and author of the Epoch programming language."
+    },
+    "headline": "Code Reuse In Actual Practice",
+    "url": "https://apoch.github.io/blog/2017/10/25/Code-Reuse-In-Actual-Practice.html",
+    "datePublished": "2017-10-25T00:00:00.000Z",
+    "description": "It&amp;#8217;s very common to hear engineers talking about &quot;code reuse&quot; - particularly in a positive light. We love to say that we&amp;#8217;ll make our designs &quot;reusable&quot;. Most of the time the meaning of this is pretty well understood; someday, we want our code to be able"
+}
+    </script>
+
+    <meta name="generator" content="HubPress" />
+    <link rel="alternate" type="application/rss+xml" title="The Bag of Holding" href="https://apoch.github.io/blog/rss/" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/atom-one-dark.min.css">
+</head>
+<body class="post-template">
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdate" href="http://outdatedbrowser.com/">Update my browser now</a></p>
+</div>
+
+<nav class="top-bar hide-for-large-up" data-topbar style="background: none">
+  <ul class="title-area">
+    <li class="name">
+
+    </li>
+    <li class="home"><a class="fi-home" href="https://apoch.github.io/blog"></a></li>
+    <li class="toggle-topbar"><a href="#" id="trigger-overlay" class="fi-list"></a></li>
+  </ul>
+
+<div class="overlay overlay-scale">
+    <button type="button" class="overlay-close">Close</button>
+    <nav>
+        <ul>
+            <li><a href="https://apoch.github.io/blog">Home</a></li>
+        </ul>
+    </nav>
+</div>
+
+</nav>
+
+<div class="row">
+
+<div class="small-16 medium-16 large-4 columns right head-area bgimage" style="background-image: url(/ThorDogOfThunder.jpg)">
+
+<header class="site-head">
+    <div class="vertical">
+        <div class="site-head-content inner">
+            <ul class="side-nav blog-menu show-for-large-up">
+                <li><a class="fi-home" href="https://apoch.github.io/blog"></a></li>
+                <li><a class="fi-torso" href="https://apoch.github.io/blog/about.html"></a></li>
+                <li><a class="fi-mail" href="https://apoch.github.io/blog/contact.html"></a></li>
+            </ul>
+            
+            <h1 class="blog-title">The Bag of Holding</h1>
+            <hr>
+            <p class="blog-description">A bottomless satchel once possessed by a knight-errant.</p>
+            <div class="blog-network">
+<!--                 <a href="#" class="fi-social-pinterest"></a>
+                <a href="#" class="fi-social-linkedin"></a>
+                <a href="#" class="fi-social-behance"></a>
+                <a href="#" class="fi-social-deviant-art"></a>
+                <a href="#" class="fi-social-dribbble"></a>
+                <a href="#" class="fi-social-flickr"></a>
+                <a href="#" class="fi-social-github"></a>
+                <a href="#" class="fi-social-skype"></a>
+                <a href="#" class="fi-social-snapchat"></a>
+                <a href="#" class="fi-social-steam"></a>
+                <a href="#" class="fi-social-xbox"></a>
+                <a href="#" class="fi-social-reddit"></a> -->
+                  <a href="https://github.com/apoch" class="fi-social-github"></a>
+                  <a href="https://twitter.com/ApochPiQ" class="fi-social-twitter"></a>
+            </div>
+        </div>
+    </div>
+</header>
+
+</div>
+
+
+<div class="small-16 medium-16 large-12 columns main-column left">
+    
+
+<main class="content" role="main">
+
+    <article class="post">
+
+
+            <h1 class="post-title">Code Reuse In Actual Practice</h1>
+
+            <span class="post-meta label"><time datetime="2017-10-25">25 Oct 2017</time></span>
+
+            <section class="post-content">
+                <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>It&#8217;s very common to hear engineers talking about "code reuse" - particularly in a positive light. We love to say that we&#8217;ll make our designs "reusable". Most of the time the meaning of this is pretty well understood; someday, we want our code to be able to be applied to some different use case and still work without extensive changes.</p>
+</div>
+<div class="paragraph">
+<p>But in practice, code reuse tends to fall flat. A common bit of wisdom is that you shouldn&#8217;t even <em>try</em> to make code reusable until you have three different use cases that would benefit from it. This is actually very good advice, and I&#8217;ve found it helps a lot to step back from the obsession with reusability for a moment and just let oneself write some "one-off" code that <em>actually works</em>.</p>
+</div>
+<div class="paragraph">
+<p>This hints at the possibility of a few flaws in the engineering mindset that reuse is a noble goal.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_not_reuse">Why Not Reuse?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Arguing <em>for</em> reuse is easy: if you only have to write and debug the code once, but can benefit from it multiple times, it&#8217;s clearly better than writing very similar code five or six times&#8230;&#8203; right?</p>
+</div>
+<div class="paragraph">
+<p>Yes and no. Premature generalization is a very real thing. Sometimes we can&#8217;t even <em>see</em> reuse potential until we&#8217;ve written similar systems repeatedly, and <em>then</em> it becomes clear that they could be unified. On the flip side, sometimes we design reusable components that are so generic they don&#8217;t actually do what we needed them to do in the first place.</p>
+</div>
+<div class="paragraph">
+<p>This is a central theme of the story of <em>Design Patterns</em> as a cultural phenomenon. Patterns were originally a <em>descriptive</em> thing. You find a common thread in five or six different systems, and you give it a name.</p>
+</div>
+<div class="paragraph">
+<p>Accumulate enough named things, though, and people start wanting to put the cart before the horse. Patterns became <em>prescriptive</em> - if you want to build a Foo, you use the Bar pattern, duh!</p>
+</div>
+<div class="paragraph">
+<p>So clearly there is a balancing act here. Something is wrong with the idea that all code should be reusable, but something is equally wrong with copy/pasting functions and never unifying them.</p>
+</div>
+<div class="paragraph">
+<p>But another, more insidious factor is at play here. Most of the time we don&#8217;t actually reuse code, <em>even if it was designed to be reusable</em>. And identifying reasons for this lapse is going to be central to making software development scalable into the future. If we keep rewriting the same few thousand systems we&#8217;re never going to do anything fun.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_identifying_why_we_don_t_reuse">Identifying Why We Don&#8217;t Reuse</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Here&#8217;s a real world use case. I want to design a system for handling callbacks in a video game engine. But I&#8217;ve already <em>got</em> several such systems, built for me by previous development efforts in the company. Most of them are basically the exact same thing with minor tweaks:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Define an "event source"</p>
+</li>
+<li>
+<p>Define some mechanism by which objects can tell the event source that they are "interested" in some particular events</p>
+</li>
+<li>
+<p>When the event source says so, go through the container of listeners and give them a callback to tell them that an event happened</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Easy. Except <em>Guild Wars 2</em> alone has around half a dozen different mechanisms for accomplishing this basic arrangement. Some are client-side, some are server-side, some relay messages between client and server, but ultimately they all do the exact same job.</p>
+</div>
+<div class="paragraph">
+<p>This is a classic example of looking at existing code and deciding it might be good to refactor it into a simpler form. Except GW2 is a multi-million line-of-code behemoth, and I sure as hell don&#8217;t want to wade through that much code to replace a fundamental mechanism.</p>
+</div>
+<div class="paragraph">
+<p>So the question becomes, if we&#8217;re going to make a better version, who&#8217;s gonna use it?</p>
+</div>
+<div class="paragraph">
+<p>For now the question is academic, but it&#8217;s worth thinking about. We&#8217;re certainly not going to stop making games any time soon, so eventually we should have a standardized callback library that everyone agrees on. So far so good.</p>
+</div>
+<div class="paragraph">
+<p>But what if I want to open-source the callback system, and let other people use it? If it&#8217;s good enough to serve all of ArenaNet&#8217;s myriad uses, surely it&#8217;d be handy elsewhere! Of course, nobody wants a callback system that&#8217;s tied to implementation details of Guild Wars 2, so we need to make the code <em>genuinely</em> reusable.</p>
+</div>
+<div class="paragraph">
+<p>There are plenty of reasons <em>not</em> to use an open-source callback library, especially if you have particular needs that aren&#8217;t represented by the library&#8217;s design. But the single biggest killer of code reuse is <em>dependencies</em>.</p>
+</div>
+<div class="paragraph">
+<p>Some dependencies are obvious. Foo derives from base class Bar, therefore there is a dependency between Foo and Bar, for just one example. But others are more devilish.</p>
+</div>
+<div class="paragraph">
+<p>Say I published my callback library. Somewhere in there, the library has to maintain a container of "things that care about Event X." How do we implement the container?</p>
+</div>
+<div class="paragraph">
+<p>Code reuse is the name of the game here. The obvious answer (outside of game dev) is to use the C++ Standard Library, such as a <code>std::vector</code> or <code>std::map</code> (or both).</p>
+</div>
+<div class="paragraph">
+<p>In games, though, the standard library is often forbidden. I won&#8217;t get into the argument here, but let&#8217;s just say that sometimes you don&#8217;t get to choose what libraries you rely on.</p>
+</div>
+<div class="paragraph">
+<p>So I have a couple of options. I can release my library with <code>std</code> dependencies, which immediately means it&#8217;s useless to half my audience. They have to rewrite a bunch of junk to make <em>my</em> code interoperate with <em>their</em> code and suddenly we&#8217;re not reusing anything anymore.</p>
+</div>
+<div class="paragraph">
+<p>The other option is to roll my own container, such as a trivial linked list. But that&#8217;s even worse, because <em>everyone</em> has a container library, and adding yet another lousy linked list implementation to the world isn&#8217;t reuse <em>either</em>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_policy_based_programming_to_the_rescue">Policy-Based Programming to the Rescue</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The notion of policy-based architecture is hardly new, but it <em>is</em> sadly underused in most practical applications. I won&#8217;t get into the whole exploration of the idea here, since that&#8217;d take a lot of space, and I mostly just want to give readers a taste of what it can do.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s the basic idea. Let&#8217;s start with a simple container dependency.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>class ThingWhatDoesCoolStuff
+{
+    std::vector&lt;int&gt; Stuff;
+};</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This clearly makes our nifty class dependent on <code>std::vector</code>, which is not great for people who don&#8217;t have <code>std::vector</code> in their acceptable tools list.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s make this a bit better, shall we?</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>template &lt;typename ContainerType&gt;
+class ThingWhatDoesCoolStuff
+{
+    ContainerType Stuff;
+};
+
+// Clients do this
+ThingWhatDoesCoolStuff&lt;std::vector&lt;int&gt;&gt; Thing;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Slightly better, but now clients have to spell a really weird name all the time (which admittedly can be solved to great extent with a <code>typedef</code> and C++11 <code>using</code> declarations).</p>
+</div>
+<div class="paragraph">
+<p>This also breaks when we actually write code:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>template &lt;typename ContainerType&gt;
+class ThingWhatDoesCoolStuff
+{
+public:
+    void AddStuff (int stuff)
+    {
+        Stuff.push_back(stuff);
+    }
+
+private:
+    ContainerType Stuff;
+};</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This works <em>provided</em> that the container we give it has a method called <code>push_back</code>. What if the method in <em>my</em> library is called <code>Add</code> instead? Now we have a compiler error, and I have to rewrite the nifty class to conform to <em>my</em> container&#8217;s API instead of the C++ Standard Library API. So much for reuse.</p>
+</div>
+<div class="paragraph">
+<p>You know what they say, you can solve any problem by adding enough layers of indirection! So let&#8217;s do that real quick.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>// This goes in the reusable library
+template &lt;typename Policy&gt;
+class ThingWhatDoesCoolStuff
+{
+private:
+    // YES I SWEAR THIS IS REAL SYNTAX
+    typedef typename Policy::template ContainerType&lt;int&gt; Container;
+
+    // Give us a member container of the desired type!
+    Container Stuff;
+
+public:
+    void AddStuff (int stuff)
+    {
+        using Adapter = Policy::ContainerAdapter&lt;int&gt;;
+        Adapter::PushBack(&amp;Stuff, stuff);
+    }
+};
+
+// Users of the library just need to write this once:
+struct MyPolicy
+{
+    // This just needs to point to the container we want
+    template &lt;typename T&gt; using ContainerType = std::vector&lt;T&gt;;
+
+    template &lt;typename T&gt;
+    struct ContainerAdapter
+    {
+        static inline void PushBack (MyPolicy::ContainerType * container, T &amp;&amp; element)
+        {
+            // This would change based on the API we use
+            container-&gt;push_back(element);
+        }
+    };
+};</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s pull this apart and see how it works.</p>
+</div>
+<div class="paragraph">
+<p>First, we introduce a template "policy" which lets us decouple our nifty class from all the things it relies on, such as container classes. <strong>Any "reusable" code should be decoupled from its dependencies.</strong> (This by no means the only way to do so, even in C++, but it&#8217;s a nice trick to have in your kit.)</p>
+</div>
+<div class="paragraph">
+<p>The hairy parts of this are really just the syntax for it all. Effectively, our nifty class just says "hey I want to use some container, and an adapter API that I know how to talk to. If you can give me an adapter to <em>your</em> container I&#8217;ll happily use it!"</p>
+</div>
+<div class="paragraph">
+<p>Here we use templates to avoid a lot of virtual dispatch overhead. Theoretically I could make a base class like "Container" and inherit from it and blah blah vomit I hate myself for just thinking this. Let&#8217;s not explore that notion any further.</p>
+</div>
+<div class="paragraph">
+<p>What&#8217;s cool is that I can keep the library code 100% identical between projects that <em>do</em> use the C++ Standard Library, and projects which <em>don&#8217;t</em>. So I could publish my callback system exactly once, and nobody would have to edit the code to use it.</p>
+</div>
+<div class="paragraph">
+<p>There is a cost here, and it&#8217;s worth thinking about: any time someone reuses my code, they have to write a suitable policy. In practice, this means you write a policy about once for every time you change your entire code base to use a different container API. In other words, pffffft.</p>
+</div>
+<div class="paragraph">
+<p>For things which aren&#8217;t as stable as containers, the policy cost may become more significant. This is why you want to reuse in only carefully considered ways, preferably (as mentioned earlier) when you have several use cases that can benefit from that shared abstraction.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_concluding_thoughts">Concluding Thoughts</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One last idea to consider is how the performance of this technique measures up. In debug builds, it can be a little ugly, but optimized builds strip away literally any substantial overhead of the templates.</p>
+</div>
+<div class="paragraph">
+<p>So runtime performance is fine, but what about <em>build times</em> themselves?</p>
+</div>
+<div class="paragraph">
+<p>Admittedly this does require a lot of templates going around. But the hope is that you&#8217;re reusing simple and composable components, not huge swaths of logic. So it&#8217;s easy to go wrong here if you don&#8217;t carefully consider what to apply this trick to. Used judiciously, however, it&#8217;s actually a bit better of a deal than defining a lot of shared abstract interfaces to decouple your APIs.</p>
+</div>
+<div class="paragraph">
+<p>I&#8217;ll go into the specific considerations of the actual callback system later. For now, I hope the peek at policy-based decoupling has been useful.</p>
+</div>
+<div class="paragraph">
+<p>Remember: three examples or you don&#8217;t have a valid generalization!</p>
+</div>
+</div>
+</div>
+                        <aside class="tags fi-pricetag-multiple">No tag</aside>
+            </section>
+            <hr>
+            <footer class="post-footer">
+
+                <section class="share">
+                    <h4>Liked this post ? Share it.</h4>
+                    <a class="fi-social-facebook" href="https://www.facebook.com/sharer/sharer.php?u=https://apoch.github.io/blog/2017/10/25/Code-Reuse-In-Actual-Practice.html"
+                        onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    </a>
+                    <a class="fi-social-twitter" href="https://twitter.com/share?text=Code%20Reuse%20In%20Actual%20Practice&amp;url=https://apoch.github.io/blog/2017/10/25/Code-Reuse-In-Actual-Practice.html"
+                        onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    </a>
+                    <a class="fi-social-google-plus" href="https://plus.google.com/share?url=https://apoch.github.io/blog/2017/10/25/Code-Reuse-In-Actual-Practice.html"
+                       onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    </a>
+                </section>
+
+                <section class="author">
+                    <header>
+                        <span>About the author</span>
+                    </header>
+                    <section>
+                        <h4>Mike Lewis</h4>
+                        <img src="https://avatars1.githubusercontent.com/u/321649?v&#x3D;4">
+                        <span>Bellevue, WA</span>
+                        <a href="https://apoch.github.io/">https://apoch.github.io/</a>
+                    </section>
+                    <footer>
+                         <p>Guild Wars 2 Project Technical Director @arenanet and author of the Epoch programming language.</p>
+                    </footer>
+                </section>
+
+        <div class="clearfix"></div>
+                    <hr>
+
+            </footer>
+
+        <h3 class="title-disqus"><span class="fi-comments"></span>Discussions</h3>
+
+
+
+
+    </article>
+
+</main>
+
+</div>
+
+</div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js?v="></script> <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.min.js?v="></script> <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js?v="></script> 
+      <script type="text/javascript">
+        jQuery( document ).ready(function() {
+          // change date with ago
+          jQuery('ago.ago').each(function(){
+            var element = jQuery(this).parent();
+            element.html( moment(element.text()).fromNow());
+          });
+        });
+
+        hljs.initHighlightingOnLoad();
+      </script>
+       
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    <!--[if lte IE 8]>
+        <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/outdatedBrowser.min.js?v=1508976303507"></script>
+    <![endif]-->
+    <script type="text/javascript" src="//apoch.github.io/blog/themes/ichi/assets/js/min/built.js?v=1508976303507"></script>
+
+    <script>
+      $(document).foundation();
+    </script>
+
+</body>
+</html>
