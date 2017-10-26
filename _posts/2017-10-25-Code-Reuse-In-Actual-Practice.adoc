@@ -1,0 +1,181 @@
+= Code Reuse In Actual Practice
+
+It's very common to hear engineers talking about "code reuse" - particularly in a positive light. We love to say that we'll make our designs "reusable". Most of the time the meaning of this is pretty well understood; someday, we want our code to be able to be applied to some different use case and still work without extensive changes.
+
+But in practice, code reuse tends to fall flat. A common bit of wisdom is that you shouldn't even _try_ to make code reusable until you have three different use cases that would benefit from it. This is actually very good advice, and I've found it helps a lot to step back from the obsession with reusability for a moment and just let oneself write some "one-off" code that _actually works_.
+
+This hints at the possibility of a few flaws in the engineering mindset that reuse is a noble goal.
+
+
+== Why Not Reuse?
+
+Arguing _for_ reuse is easy: if you only have to write and debug the code once, but can benefit from it multiple times, it's clearly better than writing very similar code five or six times... right?
+
+Yes and no. Premature generalization is a very real thing. Sometimes we can't even _see_ reuse potential until we've written similar systems repeatedly, and _then_ it becomes clear that they could be unified. On the flip side, sometimes we design reusable components that are so generic they don't actually do what we needed them to do in the first place.
+
+This is a central theme of the story of _Design Patterns_ as a cultural phenomenon. Patterns were originally a _descriptive_ thing. You find a common thread in five or six different systems, and you give it a name.
+
+Accumulate enough named things, though, and people start wanting to put the cart before the horse. Patterns became _prescriptive_ - if you want to build a Foo, you use the Bar pattern, duh!
+
+So clearly there is a balancing act here. Something is wrong with the idea that all code should be reusable, but something is equally wrong with copy/pasting functions and never unifying them.
+
+But another, more insidious factor is at play here. Most of the time we don't actually reuse code, _even if it was designed to be reusable_. And identifying reasons for this lapse is going to be central to making software development scalable into the future. If we keep rewriting the same few thousand systems we're never going to do anything fun.
+
+
+== Identifying Why We Don't Reuse
+
+Here's a real world use case. I want to design a system for handling callbacks in a video game engine. But I've already _got_ several such systems, built for me by previous development efforts in the company. Most of them are basically the exact same thing with minor tweaks:
+
+ * Define an "event source"
+ * Define some mechanism by which objects can tell the event source that they are "interested" in some particular events
+ * When the event source says so, go through the container of listeners and give them a callback to tell them that an event happened
+ 
+Easy. Except _Guild Wars 2_ alone has around half a dozen different mechanisms for accomplishing this basic arrangement. Some are client-side, some are server-side, some relay messages between client and server, but ultimately they all do the exact same job.
+
+This is a classic example of looking at existing code and deciding it might be good to refactor it into a simpler form. Except GW2 is a multi-million line-of-code behemoth, and I sure as hell don't want to wade through that much code to replace a fundamental mechanism.
+
+So the question becomes, if we're going to make a better version, who's gonna use it?
+
+For now the question is academic, but it's worth thinking about. We're certainly not going to stop making games any time soon, so eventually we should have a standardized callback library that everyone agrees on. So far so good.
+
+But what if I want to open-source the callback system, and let other people use it? If it's good enough to serve all of ArenaNet's myriad uses, surely it'd be handy elsewhere! Of course, nobody wants a callback system that's tied to implementation details of Guild Wars 2, so we need to make the code _genuinely_ reusable.
+
+There are plenty of reasons _not_ to use an open-source callback library, especially if you have particular needs that aren't represented by the library's design. But the single biggest killer of code reuse is _dependencies_.
+
+Some dependencies are obvious. Foo derives from base class Bar, therefore there is a dependency between Foo and Bar, for just one example. But others are more devilish.
+
+Say I published my callback library. Somewhere in there, the library has to maintain a container of "things that care about Event X." How do we implement the container?
+
+Code reuse is the name of the game here. The obvious answer (outside of game dev) is to use the C++ Standard Library, such as a `std::vector` or `std::map` (or both).
+
+In games, though, the standard library is often forbidden. I won't get into the argument here, but let's just say that sometimes you don't get to choose what libraries you rely on.
+
+So I have a couple of options. I can release my library with `std` dependencies, which immediately means it's useless to half my audience. They have to rewrite a bunch of junk to make _my_ code interoperate with _their_ code and suddenly we're not reusing anything anymore.
+
+The other option is to roll my own container, such as a trivial linked list. But that's even worse, because _everyone_ has a container library, and adding yet another lousy linked list implementation to the world isn't reuse _either_.
+
+
+== Policy-Based Programming to the Rescue
+
+The notion of policy-based architecture is hardly new, but it _is_ sadly underused in most practical applications. I won't get into the whole exploration of the idea here, since that'd take a lot of space, and I mostly just want to give readers a taste of what it can do.
+
+Here's the basic idea. Let's start with a simple container dependency.
+
+....
+class ThingWhatDoesCoolStuff
+{
+    std::vector<int> Stuff;
+};
+....
+
+This clearly makes our nifty class dependent on `std::vector`, which is not great for people who don't have `std::vector` in their acceptable tools list.
+
+Let's make this a bit better, shall we?
+
+....
+template <typename ContainerType>
+class ThingWhatDoesCoolStuff
+{
+    ContainerType Stuff;
+};
+
+// Clients do this
+ThingWhatDoesCoolStuff<std::vector<int>> Thing;
+....
+
+Slightly better, but now clients have to spell a really weird name all the time (which admittedly can be solved to great extent with a `typedef` and C++11 `using` declarations).
+
+This also breaks when we actually write code:
+
+....
+template <typename ContainerType>
+class ThingWhatDoesCoolStuff
+{
+public:
+    void AddStuff (int stuff)
+    {
+        Stuff.push_back(stuff);
+    }
+
+private:
+    ContainerType Stuff;
+};
+....
+
+This works _provided_ that the container we give it has a method called `push_back`. What if the method in _my_ library is called `Add` instead? Now we have a compiler error, and I have to rewrite the nifty class to conform to _my_ container's API instead of the C++ Standard Library API. So much for reuse.
+
+You know what they say, you can solve any problem by adding enough layers of indirection! So let's do that real quick.
+
+....
+// This goes in the reusable library
+template <typename Policy>
+class ThingWhatDoesCoolStuff
+{
+private:
+    // YES I SWEAR THIS IS REAL SYNTAX
+    typedef typename Policy::template ContainerType<int> Container;
+    
+    // Give us a member container of the desired type!
+    Container Stuff;
+    
+public:
+    void AddStuff (int stuff)
+    {
+        using Adapter = Policy::ContainerAdapter<int>;
+        Adapter::PushBack(&Stuff, stuff);
+    }
+};
+
+// Users of the library just need to write this once:
+struct MyPolicy
+{
+    // This just needs to point to the container we want
+    template <typename T> using ContainerType = std::vector<T>;
+    
+    template <typename T>
+    struct ContainerAdapter
+    {
+        static inline void PushBack (MyPolicy::ContainerType * container, T && element)
+        {
+            // This would change based on the API we use
+            container->push_back(element);
+        }
+    };
+};
+....
+
+Let's pull this apart and see how it works.
+
+First, we introduce a template "policy" which lets us decouple our nifty class from all the things it relies on, such as container classes. *Any "reusable" code should be decoupled from its dependencies.* (This by no means the only way to do so, even in C++, but it's a nice trick to have in your kit.)
+
+The hairy parts of this are really just the syntax for it all. Effectively, our nifty class just says "hey I want to use some container, and an adapter API that I know how to talk to. If you can give me an adapter to _your_ container I'll happily use it!"
+
+Here we use templates to avoid a lot of virtual dispatch overhead. Theoretically I could make a base class like "Container" and inherit from it and blah blah vomit I hate myself for just thinking this. Let's not explore that notion any further.
+
+What's cool is that I can keep the library code 100% identical between projects that _do_ use the C++ Standard Library, and projects which _don't_. So I could publish my callback system exactly once, and nobody would have to edit the code to use it.
+
+There is a cost here, and it's worth thinking about: any time someone reuses my code, they have to write a suitable policy. In practice, this means you write a policy about once for every time you change your entire code base to use a different container API. In other words, pffffft.
+
+For things which aren't as stable as containers, the policy cost may become more significant. This is why you want to reuse in only carefully considered ways, preferably (as mentioned earlier) when you have several use cases that can benefit from that shared abstraction.
+
+
+== Concluding Thoughts
+
+One last idea to consider is how the performance of this technique measures up. In debug builds, it can be a little ugly, but optimized builds strip away literally any substantial overhead of the templates.
+
+So runtime performance is fine, but what about _build times_ themselves?
+
+Admittedly this does require a lot of templates going around. But the hope is that you're reusing simple and composable components, not huge swaths of logic. So it's easy to go wrong here if you don't carefully consider what to apply this trick to. Used judiciously, however, it's actually a bit better of a deal than defining a lot of shared abstract interfaces to decouple your APIs.
+
+I'll go into the specific considerations of the actual callback system later. For now, I hope the peek at policy-based decoupling has been useful.
+
+Remember: three examples or you don't have a valid generalization!
+
+
+
+
+
+
+
+
+
