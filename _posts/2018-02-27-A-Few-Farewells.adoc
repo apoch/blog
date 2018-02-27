@@ -1,0 +1,101 @@
+= A Few Farewells
+
+I'm going to depart from my habit of posting predominantly technical stuff here, and write a bit about some issues that I find very important on a personal level. This is going to be more for my own benefit than anything else, but I truly hope that the exploration is helpful to someone out there who may be confronting similar challenges. If nothing else, it will be a useful reminder to Future Me of why certain things have happened the way they have.
+
+== Internet Communities
+
+I joined my first Internet community in the waning years of the 1900s. (OK, it was 1998 or so, but it's fun to say it that way.) It was a programming-centric web forum, geared around offering advice and assistance with whatever random code thing people asked about. Forums were, in that era, kind of the dominant precursor to things like Stack Overflow - but much less formalized. One step past a mailing list, really.
+
+I dropped in and out of that community for a few years before moving on more or less forever in 2002 or so. By that point I had joined a couple of other notable forums and had spread out into other online communities.
+
+Even then, it was clear to me that something about certain forums made them *stick* so much better than others. I couldn't articulate it then, and I can barely identify the components now, but the general principle is that some communities resonate with me more than others. It has a lot to do with the internal culture and attitudes and general temperature of how people interact with each other within the community - and outward facing interactions, as well.
+
+That first forum I joined turned into a cesspit. Or maybe it always *had* been a cesspit, and it just took me four years to catch on. Either way, I decided to move on from it because I just wasn't having a good time there anymore.
+
+Culture is hugely important to me - personally, professionally, philosophically - and I find that online communities have some very extreme cultures in a lot of cases. Over the years I've wandered into (and, frequently, right back out of) a lot of places on the web, and one of the most reliable predictors of me *leaving* a community is a deteriorated culture.
+
+Much of this is coming to a head right now because of my own personal circumstances, but a lot of it is a sign of the times as well. Current events being what they are, a lot of communities that *used to be* friendly, engaging, and enjoyable to participate in... well, they're turning into polarized battlegrounds littered with meme-ridden "arguments" where people basically just sling rhetoric (or outright insults) at each other until someone gives up.
+
+Don't get me wrong, people have been terrible to each other since before fire was invented. This is not news. What's news is that the terrible behavior has finally overtaken a handful of places I used to like to hang out in, and now I don't like to hang out there anymore.
+
+I want to specifically point out a couple of examples.
+
+== Twitter
+
+I joined Twitter originally because I thought it seemed like a cool way to stay in touch with a bunch of game development friends and acquaintances. And for a while, it was good for that; I could follow the people I liked to hear from, and anyone who wanted to listen to my inanity could follow me in return.
+
+Slowly, the platform evolved, and eventually turned into a monster. Curated feeds actually prompted me to quit Twitter once before. I discovered much later that third-party apps could display the *uncurated* feed, and joined back up; but things were already palpably different.
+
+The community feel of Twitter is gone. Rampant retweet-sprees and quote chains have destroyed the sensation of being able to control what viewpoints you have to be subjected to. This is a touchy issue for me, because I genuinely believe three things about viewpoints:
+
+ 1. Listening to more viewpoints, on average, is healthier than listening to a select few.
+ 2. Some viewpoints do not deserve to be listened to, full stop.
+ 3. These two things are in tension but not fundamentally contradictory.
+ 
+ 
+I liked Twitter once upon a time because it gave me the ability to hear things I otherwise would not have heard, but I could still lock away the really egregious garbage and ignore it.
+
+For a myriad of reasons, that ability has been lost.
+
+I dread opening Twitter now because I don't want to read another thread about how gun control is against the Constitution. I don't want to read another thread about how women don't deserve to play video games, or make video games for that matter. I don't want to have to hear echoes of my friends and colleagues fighting an endless war against people who quite honestly have some reprehensible opinions and habits.
+
+I believe in listening to the opposing side. I believe in finding common ground. I believe in the spirit of equitable compromise.
+
+And yet it hurts *intensely* to watch yet another conversation scroll by where someone I respect and care about in my industry has to defend her right to be a part of that industry at all; where good people who just want the endless stream of shootings to *stop already* are drowned out by expressions of hate and disdain simply because they had the audacity to say guns are probably something we should take a little more seriously.
+
+I have no intention of walking away from the issues or even the debate, such as it is, in any area really. But I do feel, quite keenly, the lack of a social space where I can just engage with people in a healthy and enjoyable way. I don't need it to be "safe." I don't need it to align exclusively with my own biases and preconceptions. I just want a place to talk about stuff - *any* stuff - where everyone is a rational adult and acting otherwise gets you a nice shiny boot back to whatever hellhole you came from.
+
+For the things I see in my feed these days, the ratio of "interesting idea that I want to think about" to "oh no why" is perilously low. Twitter no longer delivers pleasant, thoughtful discourse at a sufficient volume. (Maybe it never did, but that's beside the point.)
+
+So I'm phasing out my Twitter account. I will probably hang on to it so people can reach me until I have alternative arrangements made, but I'm actively cutting it out of my life.
+
+
+== GameDev.Net
+
+This one is a lot more emotionally charged for me. I've been lurking around and participating in the GDNet community since 2002. I've held a moderator position there for a long time. I used to sink a lot of effort into helping people with projects and questions there. I attended my first couple of GDCs under the banner of GDNet, doing "media coverage" - i.e. I'd write an article about every session I went to, and in exchange, I got a free pass to the conference.
+
+The "Bag of Holding" started as my journal on GDNet. I wrote a lot of stuff there - ranging from the flippant and silly, to the highly technical, to the intensely personal.
+
+Much like Twitter, I've simply stopped having fun on GDNet. But the reasons are much less clear to me. It isn't an outright toxic or hostile place to hang out. There's still plenty of good people there and plenty of interesting discussion.
+
+I think that in the case of GDNet, it isn't so much the site that has changed, as it is myself that's changed. To be clear, there has been a *lot* of change over the past decade and a half on that site. Some of it was harder to swallow than others. But ultimately, I don't think my desire to leave GDNet is the "fault" of that community.
+
+Rather, I think I've simply had my time, and now it's time to move on. These things happen.
+
+
+== Reddit
+
+I've been using Reddit for nearly 12 years - most of its existence. I predate subreddits and a lot of other features of the community. When I first started hanging out there, it was a pretty niche sort of place. It wasn't *exclusively* about programmers or software developers, but the vast majority of the population had *some* connection to software.
+
+To me, my desire to leave Reddit is a hybrid of my desire to leave Twitter and my desire to leave GDNet. It *is* partially a failing of the community. Back in the early days, if you were a jerk, you got called out on it and the problematic behavior was strongly discouraged in a number of ways. Since most people on the site had some common ground (i.e. programming or one of the other early interest groups) it was easy to defend each other from hostility. It was easy to *want* to be nice.
+
+Now it's become a very different place. And that's fine; I don't pretend to be entitled to it staying a particular way indefinitely. The community has moved on and evolved.
+
+I just don't want to be part of it anymore.
+
+There are still a lot of fantastic people on Reddit, and a lot of great discussion and exploration happens there. But it's also exquisitely easy for moderation to slip. Once a sub gets a certain critical mass, if the mod staff is not ready and willing to tackle the volume, bad behavior becomes rampant.
+
+What made me step back and think about all this was not a feeling of being attacked or wronged. What made me step back was realizing that *I was also starting to act like a jerk* - and very frequently. Not only was I doing things I found distasteful, but there was minimal response or reaction from the community itself to discourage more of the same.
+
+I'm not leaving Reddit because it's devoid of merit. I'm leaving Reddit because I can't enjoy it anymore, and *my own behavior* is part of that problem.
+
+
+== What's Next
+
+I'm not going to cite the "new" places I've taken to hanging out in - partially because I like the idea of keeping them pristine, but mostly because I'm not ready to commit to them just yet. Until I actually settle somewhere, I may be a little less visible and a little harder to get ahold of.
+
+On a general level, though, there are a couple of things I think are interesting to consider.
+
+Culture, as I cited earlier, is hugely important to me. The fundamental structure and even the UX of a community can have massive impacts on the culture. I'm interested in communities where the culture is generally positive, supportive, introspective, self-aware, and self-healing. I think some technological approaches to "Internet community" are more likely to produce these qualities. But again, I'm really early in this process, and I want to gather more data before making any strong statements.
+
+Another interesting factor is what I've been mentally referring to as "taxonomy." Some communities are organized around sets of ideas - like subreddits, for example. If you care about Subject X, you go into the section of the community that talks about Subject X, and you hopefully encounter people who are fun to talk to. This is a totally legitimate way to build a community. In fact, I know that some people actually prefer this approach.
+
+The other angle is to organize around *individuals*. Twitter and Facebook are much more oriented around people than subjects, for example. It wasn't always the case, but for me now, at this point in my life, this organizational taxonomy is much more appealing.
+
+I would like to join communities where I know interesting people hang out. I want to know what those people have to say. I want to know who *they* listen to and find interesting. I want to use the network effect to expand my own sphere of awareness and perhaps even influence.
+
+I think a community that focuses on *people* and *culture* would really hit the spot.
+
+
+
+
